@@ -17,7 +17,17 @@ async function start(){
         })
         return elArr
     })
-    console.log(tableHeaderData)
+    
+    let athleteData = await page.evaluate(()=>{
+        let selector = ".data-table div div.v-data-table div.v-data-table__wrapper table tbody tr:nth-of-type(1) td > div"
+        let elArr = Array.from(document.querySelectorAll(`${selector}`))
+        elArr = elArr.map((x)=>{
+            return  x.textContent
+        })
+        return elArr
+    })
+
+    console.log(athleteData)
 
 }
 
