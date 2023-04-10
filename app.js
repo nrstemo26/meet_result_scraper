@@ -18,17 +18,37 @@ async function start(){
         return elArr
     })
     
-    let athleteData = await page.evaluate((index)=>{
-        let selector = ".data-table div div.v-data-table div.v-data-table__wrapper table tbody tr:nth-of-type("+ index +") td > div"
-        let elArr = Array.from(document.querySelectorAll(`${selector}`))
-        elArr = elArr.map((x)=>{
-            return  x.textContent
-        })
-        return elArr
-    },1)
+    // let athleteData = await page.evaluate((index)=>{
+    //     let selector = ".data-table div div.v-data-table div.v-data-table__wrapper table tbody tr:nth-of-type("+ index +") td > div"
+    //     let elArr = Array.from(document.querySelectorAll(`${selector}`))
+    //     elArr = elArr.map((x)=>{
+    //         return  x.textContent
+    //     })
+    //     return elArr
+    // },1)
 
-    console.log(athleteData)
+    getAllAthletes(30, page)
+    // console.log(athleteData)
 
 }
+
+async function getAllAthletes(athletesOnPage, page){
+    let allAthleteData =[];
+    for(let i = 1; i <= athletesOnPage; i++){
+        let athleteData = await page.evaluate((index)=>{
+            let selector = ".data-table div div.v-data-table div.v-data-table__wrapper table tbody tr:nth-of-type("+ index +") td > div"
+            let elArr = Array.from(document.querySelectorAll(`${selector}`))
+            elArr = elArr.map((x)=>{
+                return  x.textContent
+            })
+            return elArr
+
+        },i)
+        athleteData = athleteData.map(x=> x.replace(',',' ').trim())
+        allAthleteData.push(athleteData)
+    }
+    console.log(allAthleteData)    
+}
+
 
 start()
