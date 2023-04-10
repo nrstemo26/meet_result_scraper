@@ -1,0 +1,17 @@
+{
+  "name": "usaw_meet_scraper",
+  "version": "1.0.0",
+  "description": "node scraper using puppeteer",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  },
+  "dependencies": {
+    "puppeteer": "^19.8.5"
+  }
+}
