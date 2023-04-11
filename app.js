@@ -13,6 +13,13 @@ async function start(meetNumber, csvName){
     })
     //good to here
 
+    async function getPageData(){
+        return await page.$eval(
+            ".data-table div div.v-data-table div.v-data-footer div.v-data-footer__pagination",
+            x =>  x.textContent
+        )
+    }
+
 
     // await page.screenshot({path: 'meet.png', fullPage: true})
 
@@ -31,6 +38,16 @@ async function start(meetNumber, csvName){
     
     await getAthletesOnPage(30, page, csvName);
 
+    while(await handleTotalAthleteString(await getPageData())){
+        console.log('getting resourses...')
+        console.log(await getPageData())
+        const [response] = await Promise.all([
+            page.waitForNetworkIdle(),
+            page.click('.data-table div div.v-data-table div.v-data-footer div.v-data-footer__icons-after'),
+        ]);
+        await getAthletesOnPage(30, page, csvName)
+    }
+    console.log('done scraping')
 
     await browser.close();
 }
@@ -82,12 +99,11 @@ function handleTotalAthleteString(str){
     return curr < max;
 }
 
-async function getPageData(page){
-    return await page.$eval(
-        ".data-table div div.v-data-table div.v-data-footer div.v-data-footer__pagination",
-        x =>  x.textContent
-    )
-}
-
+// async function getPageData(page){
+//     return await page.$eval(
+//         ".data-table div div.v-data-table div.v-data-footer div.v-data-footer__pagination",
+//         x =>  x.textContent
+//     )
+// }
 
 start('5738', 'university2023')
