@@ -101,7 +101,12 @@ function handleTotalAthleteString(str){
 }
 
 
+async function getMultipleMeetResults(meetsArray){
+    for(const meet of meetsArray){
+        console.log('getting results for ' + meet.csv)
+        await start(meet.url, meet.csv);
+    }
+}
 
 
-//uncomment to scrape an example meet
-// start('5738', 'university2023')
+getMultipleMeetResults(meet_website_data);
