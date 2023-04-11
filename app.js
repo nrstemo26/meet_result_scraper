@@ -4,6 +4,7 @@ async function start(){
     let url = 'https://usaweightlifting.sport80.com/public/rankings/results/5738'
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
+    await page.setViewport({width:1500, height:1000})
     await page.goto(url, {
         waitUntil: 'networkidle0'
     })
@@ -18,17 +19,8 @@ async function start(){
         return elArr
     })
     
-    // let athleteData = await page.evaluate((index)=>{
-    //     let selector = ".data-table div div.v-data-table div.v-data-table__wrapper table tbody tr:nth-of-type("+ index +") td > div"
-    //     let elArr = Array.from(document.querySelectorAll(`${selector}`))
-    //     elArr = elArr.map((x)=>{
-    //         return  x.textContent
-    //     })
-    //     return elArr
-    // },1)
-
     getAllAthletes(30, page)
-    // console.log(athleteData)
+
 
 }
 
@@ -47,7 +39,9 @@ async function getAllAthletes(athletesOnPage, page){
         athleteData = athleteData.map(x=> x.replace(',',' ').trim())
         allAthleteData.push(athleteData)
     }
-    console.log(allAthleteData)    
+    console.log(allAthleteData)  
+    
+    await browser.close();
 }
 
 
