@@ -1,7 +1,10 @@
 const puppeteer = require('puppeteer')
+const fs = require('fs/promises')
 
-async function start(){
-    let url = 'https://usaweightlifting.sport80.com/public/rankings/results/5738'
+async function start(meetNumber, csvName){
+    let baseUrl = 'https://usaweightlifting.sport80.com/public/rankings/results/'
+    let url = baseUrl + meetNumber;
+   
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.setViewport({width:1500, height:1000})
@@ -23,7 +26,9 @@ async function start(){
     let headerCSV = tableHeaderData.join(', ');
     headerCSV += '\n'
 
-    
+    writeCSV(csvName, headerCSV);
+
+
     
     getAthletesOnPage(30, page)
 
@@ -51,6 +56,22 @@ async function getAthletesOnPage(athletesOnPage, page){
     
 }
 
+function createCSVfromArray(arr){
+    let newCSV = arr.map( (el)=> {
+        return el.join(', ')
+    }).join('\n')
+    newCSV += '\n'
+    return newCSV;
+}
+async function writeCSV(meetPath, data){
+    let fullPath = './data/' + meetPath + '.csv';
+    await fs.writeFile(fullPath, data, {flag:"a+"}, err =>{
+        if(err){
+            console.error(err);
+        }
+    })
+}
+
 function handleTotalAthleteString(str){
     let [curr, max] = str.split(' of ')
     curr = curr.split('-')[1]
@@ -67,4 +88,4 @@ async function getPageData(page){
 }
 
 
-start()
+start('5738', 'university2023')
