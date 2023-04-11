@@ -34,21 +34,21 @@ async function start(meetNumber, csvName){
     headerCSV += '\n'
     writeCSV(csvName, headerCSV);
 
-
-    
     await getAthletesOnPage(30, page, csvName);
 
     while(await handleTotalAthleteString(await getPageData())){
         console.log('getting resourses...')
         console.log(await getPageData())
-        const [response] = await Promise.all([
+        await Promise.all([
             page.waitForNetworkIdle(),
             page.click('.data-table div div.v-data-table div.v-data-footer div.v-data-footer__icons-after'),
         ]);
         await getAthletesOnPage(30, page, csvName)
     }
-    console.log('done scraping')
 
+    console.log('getting resourses...')
+    console.log(await getPageData())
+    console.log('done scraping')
     await browser.close();
 }
 
@@ -68,11 +68,7 @@ async function getAthletesOnPage(athletesOnPage, page , csvName){
     }
 
     let weightliftingCSV = createCSVfromArray(allAthleteData);
-    writeCSV(csvName, weightliftingCSV)
-
-    // console.log(allAthleteData)  
-
-    
+    writeCSV(csvName, weightliftingCSV)    
 }
 
 function createCSVfromArray(arr){
@@ -82,6 +78,7 @@ function createCSVfromArray(arr){
     newCSV += '\n'
     return newCSV;
 }
+
 async function writeCSV(meetPath, data){
     let fullPath = './data/' + meetPath + '.csv';
     await fs.writeFile(fullPath, data, {flag:"a+"}, err =>{
@@ -99,11 +96,6 @@ function handleTotalAthleteString(str){
     return curr < max;
 }
 
-// async function getPageData(page){
-//     return await page.$eval(
-//         ".data-table div div.v-data-table div.v-data-footer div.v-data-footer__pagination",
-//         x =>  x.textContent
-//     )
-// }
 
+//uncomment to scrape an example meet
 start('5738', 'university2023')
