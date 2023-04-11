@@ -11,7 +11,7 @@ async function start(meetNumber, csvName){
     await page.goto(url, {
         waitUntil: 'networkidle0'
     })
-    //good to here except for url handling
+    //good to here
 
 
     // await page.screenshot({path: 'meet.png', fullPage: true})
@@ -30,7 +30,7 @@ async function start(meetNumber, csvName){
 
 
     
-    getAthletesOnPage(30, page)
+    // getAthletesOnPage(30, page)
 
 
     await browser.close();
