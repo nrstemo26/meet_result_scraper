@@ -25,18 +25,17 @@ async function start(meetNumber, csvName){
     })
     let headerCSV = tableHeaderData.join(', ');
     headerCSV += '\n'
-
     writeCSV(csvName, headerCSV);
 
 
     
-    // getAthletesOnPage(30, page)
+    await getAthletesOnPage(30, page, csvName);
 
 
     await browser.close();
 }
 
-async function getAthletesOnPage(athletesOnPage, page){
+async function getAthletesOnPage(athletesOnPage, page , csvName){
     let allAthleteData =[];
     for(let i = 1; i <= athletesOnPage; i++){
         let athleteData = await page.evaluate((index)=>{
@@ -46,12 +45,15 @@ async function getAthletesOnPage(athletesOnPage, page){
                 return  x.textContent
             })
             return elArr
-
         },i)
         athleteData = athleteData.map(x=> x.replace(',',' ').trim())
         allAthleteData.push(athleteData)
     }
-    console.log(allAthleteData)  
+
+    let weightliftingCSV = createCSVfromArray(allAthleteData);
+    writeCSV(csvName, weightliftingCSV)
+
+    // console.log(allAthleteData)  
 
     
 }
