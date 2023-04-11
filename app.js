@@ -22,6 +22,7 @@ async function start(){
     getAllAthletes(30, page)
 
 
+    await browser.close();
 }
 
 async function getAllAthletes(athletesOnPage, page){
@@ -40,8 +41,23 @@ async function getAllAthletes(athletesOnPage, page){
         allAthleteData.push(athleteData)
     }
     console.log(allAthleteData)  
+
     
-    await browser.close();
+}
+
+function handleTotalAthleteString(str){
+    let [curr, max] = str.split(' of ')
+    curr = curr.split('-')[1]
+    curr = parseInt(curr)
+    max = parseInt(max)
+    return curr < max;
+}
+
+async function getPageData(page){
+    return await page.$eval(
+        ".data-table div div.v-data-table div.v-data-footer div.v-data-footer__pagination",
+        x =>  x.textContent
+    )
 }
 
 
