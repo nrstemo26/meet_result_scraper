@@ -49,6 +49,7 @@ async function start(meetNumber, csvName){
     console.log('getting resourses...')
     console.log(await getPageData())
     console.log('done scraping')
+
     await browser.close();
 }
 
@@ -98,4 +99,4 @@ function handleTotalAthleteString(str){
 
 
 //uncomment to scrape an example meet
-start('5738', 'university2023')
+// start('5738', 'university2023')y
