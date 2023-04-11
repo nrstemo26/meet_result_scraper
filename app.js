@@ -1,5 +1,8 @@
 const puppeteer = require('puppeteer')
 const fs = require('fs/promises')
+const meet_website_data = require('./meet_website_data/website_data').data
+console.log(meet_website_data)
+
 
 async function start(meetNumber, csvName){
     let baseUrl = 'https://usaweightlifting.sport80.com/public/rankings/results/'
@@ -98,5 +101,7 @@ function handleTotalAthleteString(str){
 }
 
 
+
+
 //uncomment to scrape an example meet
-// start('5738', 'university2023')y
+// start('5738', 'university2023')
