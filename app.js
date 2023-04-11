@@ -8,6 +8,8 @@ async function start(){
     await page.goto(url, {
         waitUntil: 'networkidle0'
     })
+    //good to here except for url handling
+
 
     // await page.screenshot({path: 'meet.png', fullPage: true})
 
@@ -18,14 +20,18 @@ async function start(){
         })
         return elArr
     })
+    let headerCSV = tableHeaderData.join(', ');
+    headerCSV += '\n'
+
     
-    getAllAthletes(30, page)
+    
+    getAthletesOnPage(30, page)
 
 
     await browser.close();
 }
 
-async function getAllAthletes(athletesOnPage, page){
+async function getAthletesOnPage(athletesOnPage, page){
     let allAthleteData =[];
     for(let i = 1; i <= athletesOnPage; i++){
         let athleteData = await page.evaluate((index)=>{
