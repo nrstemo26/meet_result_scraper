@@ -1,7 +1,5 @@
 const puppeteer = require('puppeteer')
 const fs = require('fs/promises')
-const meet_website_data = require('./meet_website_data/website_data').data
-
 
 
 async function start(meetNumber, csvName){
@@ -14,7 +12,7 @@ async function start(meetNumber, csvName){
     await page.goto(url, {
         waitUntil: 'networkidle0'
     })
-    //good to here
+
 
     async function getPageData(){
         return await page.$eval(
