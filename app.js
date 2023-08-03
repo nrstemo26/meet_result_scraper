@@ -2,10 +2,14 @@ const puppeteer = require('puppeteer')
 const fs = require('fs/promises')
 
 
+///csv helper files/folders
+
+
 async function start(meetNumber, csvName){
     let baseUrl = 'https://usaweightlifting.sport80.com/public/rankings/results/'
     let url = baseUrl + meetNumber;
    
+
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.setViewport({width:1500, height:1000})
@@ -104,7 +108,7 @@ function handleTotalAthleteString(str){
 }
 
 
-async function getMultipleMeetResults(start,end){
+async function getMultipleMeetResults(start, end){
     let noMeet = [];
     for(let i=start; i< end; i++){
         console.log('getting results for meet ' + i);
