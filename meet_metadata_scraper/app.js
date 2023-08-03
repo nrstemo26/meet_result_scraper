@@ -43,13 +43,10 @@ async function start(csvName){
         console.log('getting the date')
         await page.waitForTimeout(2000)
         const bar = await page.$eval("div.v-date-picker-table table tbody tr td:nth-of-type(1) button.v-btn div.v-btn__content", el => el.textContent)
-        // await page.click('v-input__control v-input__slot')
-        console.log(bar)
+        // console.log(bar)
         page.click("div.v-date-picker-table table tbody tr td:nth-of-type(1) button.v-btn div.v-btn__content")  
-        // page.click("div.v-date-picker-table table tbody tr td:nth-of-type(1)")  
-
-
     }
+
     async function clickApply(){
         console.log('clicking apply')
         await page.waitForTimeout(2000)
@@ -62,24 +59,18 @@ async function start(csvName){
         await Promise.all([
             page.waitForNetworkIdle(),
             page.click('.data-table div.container.pb-0 div.s80-filter div.row.no-gutters .v-badge button.v-btn'),
-            // page.click('.data-table div div.v-data-table div.v-data-footer div.v-data-footer__icons-after'),
-            //page.click('.data-table div div.v-data-table div.v-data-footer div.v-data-footer__icons-after'),
         ]);
 
-        // await page.waitForSelector('div.v-dialog div.v-card div.v-card__text div.s80-date-picker div.v-input div.v-input__control div.v-input__slot div.v-text-field label div')
-        // await page.waitForSelector('div.v-dialog div.v-card div.v-card__text div.s80-date-picker ')
         await page.waitForTimeout(2000)
         
-        // const bar = await page.$eval("div.v-dialog div.v-card div.v-card__text div.s80-date-picker div.v-input div.v-input__control div.v-input__slot div.v-text-field label div", el => el.value)
         const bar = await page.$eval("#date_range_start", el => el.value)
-        // await page.click('v-input__control v-input__slot')
-        console.log(bar)
-        
+        // console.log(bar)
         
         page.screenshot({path: 'filter.png', fullPage: true})
         
         //this clicks and opens the date selector
         await page.click('#date_range_start')
+        
         for(let i=0; i<155; i++){
             console.log(i)
             await moveBackMonth()
