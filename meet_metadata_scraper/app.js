@@ -70,7 +70,7 @@ async function start(csvName){
         
         //this clicks and opens the date selector
         await page.click('#date_range_start')
-        
+
         for(let i=0; i<155; i++){
             console.log(i)
             await moveBackMonth()
@@ -84,8 +84,8 @@ async function start(csvName){
 
     
     await clickFilter()
-    console.log('taking screenshot')
-    await page.screenshot({path: 'meet.png', fullPage: true})
+    // console.log('taking screenshot')
+    // await page.screenshot({path: 'meet.png', fullPage: true})
 
 
 
@@ -104,7 +104,7 @@ async function start(csvName){
     await getMeetsOnPage(30, page, csvName);
 
     while(await handleTotalAthleteString(await getPageData())){
-        console.log('getting meet data...')
+        console.log('getting meet metadata...')
         console.log(await getPageData())
         await Promise.all([
             page.waitForNetworkIdle(),
@@ -165,4 +165,5 @@ function handleTotalAthleteString(str){
     return curr < max;
 }
 
-start('all_meet_metadata_pipes')
+// uncomment to run
+// start('all_meet_metadata_pipes')
