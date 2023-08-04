@@ -99,7 +99,7 @@ async function start(csvName){
     })
     let headerCSV = tableHeaderData.join(', ');
     headerCSV += '\n'
-    writeCSV('all-meets',csvName, headerCSV);
+    writeCSV('meet-metadata',csvName, headerCSV);
 
     
     await getMeetsOnPage(30, page, csvName);
@@ -138,7 +138,7 @@ async function getMeetsOnPage(athletesOnPage, page , csvName){
     }
 
     let weightliftingCSV = createCSVfromArray(allAthleteData);
-    writeCSV('all-meets',csvName, weightliftingCSV)    
+    writeCSV('meet-metadata',csvName, weightliftingCSV)    
 }
 
 
