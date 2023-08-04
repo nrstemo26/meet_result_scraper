@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer')
-const fs = require('fs/promises')
+const { createCSVfromArray, writeCSV } = require('../csv_utils/utils');
 
 async function start(csvName){
     //we dont need a meet number
@@ -140,22 +140,6 @@ async function getMeetsOnPage(athletesOnPage, page , csvName){
     writeCSV(csvName, weightliftingCSV)    
 }
 
-function createCSVfromArray(arr){
-    let newCSV = arr.map( (el)=> {
-        return el.join('| ')
-    }).join('\n')
-    newCSV += '\n'
-    return newCSV;
-}
-
-async function writeCSV(meetPath, data){
-    let fullPath = './data/' + meetPath + '.csv';
-    await fs.writeFile(fullPath, data, {flag:"a+"}, err =>{
-        if(err){
-            console.error(err);
-        }
-    })
-}
 
 function handleTotalAthleteString(str){
     let [curr, max] = str.split(' of ')
@@ -166,4 +150,4 @@ function handleTotalAthleteString(str){
 }
 
 // uncomment to run
-// start('all_meet_metadata_pipes')
+start('foo')
