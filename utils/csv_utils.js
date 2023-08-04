@@ -9,8 +9,8 @@ function createCSVfromArray(arr){
 }
 
 
-async function writeCSV(meetPath, data){
-    let fullPath = './data/' + meetPath + '.csv';
+async function writeCSV(folderName, fileName, data){
+    let fullPath = `./${folderName}/${fileName}.csv`;
     await fs.writeFile(fullPath, data, {flag:"a+"}, err =>{
         if(err){
             console.error(err);

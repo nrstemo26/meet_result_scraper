@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer')
-const { createCSVfromArray, writeCSV } = require('../csv_utils/utils');
+const { createCSVfromArray, writeCSV } = require('../utils/csv_utils');
+const {getDateMMDDYYYY} = require('../utils/date_utils')
 
 async function start(csvName){
     //we dont need a meet number
@@ -98,7 +99,7 @@ async function start(csvName){
     })
     let headerCSV = tableHeaderData.join(', ');
     headerCSV += '\n'
-    writeCSV(csvName, headerCSV);
+    writeCSV('all-meets',csvName, headerCSV);
 
     
     await getMeetsOnPage(30, page, csvName);
@@ -137,7 +138,7 @@ async function getMeetsOnPage(athletesOnPage, page , csvName){
     }
 
     let weightliftingCSV = createCSVfromArray(allAthleteData);
-    writeCSV(csvName, weightliftingCSV)    
+    writeCSV('all-meets',csvName, weightliftingCSV)    
 }
 
 
@@ -149,5 +150,9 @@ function handleTotalAthleteString(str){
     return curr < max;
 }
 
-// uncomment to run
-start('foo')
+
+
+console.log(getDateMMDDYYYY())
+//all-meets-MM-DD-YYYYY
+
+//start('foo')

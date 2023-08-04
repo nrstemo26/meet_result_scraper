@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer')
-const { createCSVfromArray, writeCSV } = require('./csv_utils/utils');
+const { createCSVfromArray, writeCSV } = require('./utils/csv_utils');
 
 
 ///csv helper files/folders
@@ -37,7 +37,7 @@ async function start(meetNumber, csvName){
     if(tableHeaderData.length > 0){
         let headerCSV = tableHeaderData.join(', ');
         headerCSV += '\n'
-        writeCSV(csvName, headerCSV);
+        writeCSV('new-meet-data',csvName, headerCSV);
     }else{
         await browser.close()
         throw new Error('no meet available')
@@ -79,7 +79,7 @@ async function getAthletesOnPage(athletesOnPage, page , csvName){
     }
 
     let weightliftingCSV = createCSVfromArray(allAthleteData);
-    writeCSV(csvName, weightliftingCSV)    
+    writeCSV('new-meet-data',csvName, weightliftingCSV)    
 }
 
 function handleTotalAthleteString(str){
