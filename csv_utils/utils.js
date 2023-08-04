@@ -1,6 +1,6 @@
 const fs = require('fs/promises')
 
-export function createCSVfromArray(arr){
+function createCSVfromArray(arr){
     let newCSV = arr.map( (el)=> {
         return el.join('| ')
     }).join('\n')
@@ -9,11 +9,16 @@ export function createCSVfromArray(arr){
 }
 
 
-export async function writeCSV(meetPath, data){
+async function writeCSV(meetPath, data){
     let fullPath = './data/' + meetPath + '.csv';
     await fs.writeFile(fullPath, data, {flag:"a+"}, err =>{
         if(err){
             console.error(err);
         }
     })
+}
+
+module.exports={
+    createCSVfromArray,
+    writeCSV
 }
