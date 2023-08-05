@@ -1,8 +1,9 @@
 const puppeteer = require('puppeteer')
 const { createCSVfromArray, writeCSV } = require('../utils/csv_utils');
-const {getDateMMDDYYYY} = require('../utils/date_utils')
+const {getDateMMDDYYYY} = require('../utils/date_utils');
+const { write } = require('fs');
 
-async function start(csvName){
+async function getAllMeetMetaData(csvName){
     //we dont need a meet number
     //the baseurl should preload some shit
     
@@ -72,7 +73,7 @@ async function start(csvName){
         //this clicks and opens the date selector
         await page.click('#date_range_start')
 
-        for(let i=0; i<155; i++){
+        for(let i=0; i<3; i++){
             console.log(i)
             await moveBackMonth()
         }
@@ -153,6 +154,8 @@ function handleTotalAthleteString(str){
 
 
 console.log(getDateMMDDYYYY())
+   
 //all-meets-MM-DD-YYYYY
 
-//start('foo')
+//getAllMeetMetaData('foo-'+ getDateMMDDYYYY())
+// getAllMeetMetaData('foo-7-28-2023')
