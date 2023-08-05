@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon app.js",
-    "meta-data":"nodemon meet_metadata_scraper/app.js"
+    "meta-data": "nodemon meet_metadata_scraper/app.js",
+    "compare-metadata": "nodemon main.js"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +14,10 @@
     "nodemon": "^2.0.22"
   },
   "dependencies": {
+    "csv": "^6.3.1",
+    "csv-parser": "^3.0.0",
+    "csv-stringify": "^6.4.0",
+    "fast-csv": "^4.3.6",
     "puppeteer": "^19.8.5"
   }
 }
