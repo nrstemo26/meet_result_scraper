@@ -1,11 +1,11 @@
 const fs = require('fs');
 const csv = require('csv-parser');
-const fastcsv = require('fast-csv')
 const path = require('path');
+const {getDateMMDDYYYY: getDate } = require('./utils/date_utils')
 
 const csvFiles = ['./data/meet-metadata/111.csv', './data/meet-metadata/222.csv', ]; // List of your CSV files
 const outputCsvPath = 'weekly_update'
-const outputFile = 'foo.csv'
+const outputFile = getDate()+'-metadata.csv'
 //needs to have the file title
 
 // const csvFiles = ['./data/meet-metadata/bar.csv', './data/meet-metadata/baz-small.csv', ]; // List of your CSV files
