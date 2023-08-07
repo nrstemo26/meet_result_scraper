@@ -10,6 +10,7 @@ const csvFiles = ['./data/meet-metadata/111.csv', './data/meet-metadata/222.csv'
 
 const outputCsvPath = 'weekly_update'
 const outputFile = getDate() + '-metadata.csv'
+const outputfileName = outputCsvPath + '/' + outputFile
 
 async function writeCSVHeaders(inputCsv){
     const headers = [];
@@ -22,7 +23,7 @@ async function writeCSVHeaders(inputCsv){
 
         // Write headers to the output CSV
         const outputCsvContent = headers.join(',') + '\n';
-        fs.writeFile(outputCsvPath + '/' + outputFile, outputCsvContent, 'utf8', (err) => {
+        fs.writeFile(outputfileName, outputCsvContent, 'utf8', (err) => {
         if (err) {
             console.error(err);
             return err;
@@ -30,6 +31,7 @@ async function writeCSVHeaders(inputCsv){
         
         });
     });
+    return outputfileName;
 }
 
 //Read the CSV files and store rows in the rowsMap
@@ -117,12 +119,16 @@ async function writeUnmatchedRows() {
 
 async function makeNewMeetMetaData(){
     await writeCSVHeaders(csvFiles[1])
-    .then(() => console.log('Headers written to CSV files successfully.'))
+    .then((res) => {
+        console.log('Headers written to CSV files successfully.')
+    })
     .catch((error) => console.error('Error:', error))
     
     await writeUnmatchedRows()
     .then(() => console.log('Unmatched rows written to CSV files successfully.'))
     .catch((error) => console.error('Error:', error))
+
+    return outputfileName
 }
 
 module.exports = {
