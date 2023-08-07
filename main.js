@@ -46,14 +46,38 @@ async function readCSV(file) {
 // Create the output directory for unmatched rows
 
 // Helper function to save CSV data to file using fast-csv
-async function saveCSV(file, data) {
+// async function saveCSV(file, data) {
+//     return new Promise((resolve, reject) => {
+//       const ws = fs.createWriteStream(file);
+
+//       fastcsv.write(data, { headers: true, quoteHeaders:false, quoteColumns:false }).pipe(ws);
+//       ws.on('finish', () => resolve());
+//       ws.on('error', (error) => reject(error));
+//     });
+//   }
+  async function saveCSV(file, data) {
     return new Promise((resolve, reject) => {
-      const ws = fs.createWriteStream(file);
-      fastcsv.write(data, { headers: true }).pipe(ws);
-      ws.on('finish', () => resolve());
-      ws.on('error', (error) => reject(error));
+        const ws = fs.createWriteStream(file);
+
+        // Write header without quotes
+        if (data.length > 0) {
+            const header = Object.keys(data[0]).join(",");
+            ws.write(header + "\n");
+        }
+
+        // Write rows without quotes
+        for (const row of data) {
+            const rowValues = Object.values(row).map(value => value.toString());
+            ws.write(rowValues.join(",") + "\n");
+        }
+
+        ws.end();
+
+        ws.on('finish', () => resolve());
+        ws.on('error', (error) => reject(error));
     });
-  }
+}
+
   
   
   
@@ -72,7 +96,7 @@ async function saveCSV(file, data) {
   const unmatchedRows = {};
   for (const [file, rows] of Object.entries(allRows)) {
     unmatchedRows[file] = rows.filter((row) => {
-        const rowString = JSON.stringify(row);
+      const rowString = JSON.stringify(row);
       return !csvFiles.some(otherFile => {
           if (otherFile !== file) {
               return allRows[otherFile].some(otherRow => JSON.stringify(otherRow) === rowString);
