@@ -24,37 +24,8 @@ async function readCSV(file) {
     });
 }
 
-// Helper function to save CSV data to file
-// async function saveCSV(file, data) {
-//   return new Promise((resolve, reject) => {
-//     stringify(data, { header: true }, (error, output) => {
-//       if (error) {
-//         reject(error);
-//       } else {
-//         fs.writeFile(file, output, (err) => {
-//           if (err) {
-//             reject(err);
-//           } else {
-//             resolve();
-//           }
-//         });
-//       }
-//     });
-//   });
-// }
 
-// Create the output directory for unmatched rows
 
-// Helper function to save CSV data to file using fast-csv
-// async function saveCSV(file, data) {
-//     return new Promise((resolve, reject) => {
-//       const ws = fs.createWriteStream(file);
-
-//       fastcsv.write(data, { headers: true, quoteHeaders:false, quoteColumns:false }).pipe(ws);
-//       ws.on('finish', () => resolve());
-//       ws.on('error', (error) => reject(error));
-//     });
-//   }
   async function saveCSV(file, data) {
     return new Promise((resolve, reject) => {
         const ws = fs.createWriteStream(file);
