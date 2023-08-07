@@ -1,3 +1,6 @@
+// todos:
+// make this dynamic off of files of chosing for csvFiles var
+
 const fs = require('fs');
 const csv = require('csv-parser');
 const path = require('path');
@@ -112,14 +115,19 @@ async function writeUnmatchedRows() {
     }
 }
 
-writeCSVHeaders(csvFiles[1])
-.then(() => console.log('Headers written to CSV files successfully.'))
-.catch((error) => console.error('Error:', error))
+async function makeNewMeetMetaData(){
+    writeCSVHeaders(csvFiles[1])
+    .then(() => console.log('Headers written to CSV files successfully.'))
+    .catch((error) => console.error('Error:', error))
+    
+    writeUnmatchedRows()
+    .then(() => console.log('Unmatched rows written to CSV files successfully.'))
+    .catch((error) => console.error('Error:', error))
+}
 
-writeUnmatchedRows()
-.then(() => console.log('Unmatched rows written to CSV files successfully.'))
-.catch((error) => console.error('Error:', error))
-
+module.exports = {
+    makeNewMeetMetaData
+}
 
 //what are the main processes we need to do for this
 
