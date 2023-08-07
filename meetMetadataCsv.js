@@ -116,11 +116,11 @@ async function writeUnmatchedRows() {
 }
 
 async function makeNewMeetMetaData(){
-    writeCSVHeaders(csvFiles[1])
+    await writeCSVHeaders(csvFiles[1])
     .then(() => console.log('Headers written to CSV files successfully.'))
     .catch((error) => console.error('Error:', error))
     
-    writeUnmatchedRows()
+    await writeUnmatchedRows()
     .then(() => console.log('Unmatched rows written to CSV files successfully.'))
     .catch((error) => console.error('Error:', error))
 }
