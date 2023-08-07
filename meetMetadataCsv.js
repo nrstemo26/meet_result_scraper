@@ -22,7 +22,7 @@ async function writeCSVHeaders(inputCsv){
         });
 
         // Write headers to the output CSV
-        const outputCsvContent = headers.join(',') + '\n';
+        const outputCsvContent = headers.join('|') + '\n';
         fs.writeFile(outputfileName, outputCsvContent, 'utf8', (err) => {
         if (err) {
             console.error(err);
