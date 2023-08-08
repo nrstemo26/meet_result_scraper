@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer')
+const {start: getOneMeetCSV} = require('./app')
 const { createCSVfromArray, writeCSV } = require('./utils/csv_utils');
 const {getDateMMDDYYYY} = require('./utils/date_utils');
 const { write } = require('fs');
@@ -18,8 +19,9 @@ async function getAllMeetMetaData(csvName,meetsArr){
     await page.goto(url, {
         waitUntil: 'networkidle0'
     })
+    await page.screenshot({path: 'ogpage.png', fullPage: true})
+        
     
-
     async function getPageData(){
         return await page.$eval(
             ".data-table div div.v-data-table div.v-data-footer div.v-data-footer__pagination",
@@ -81,8 +83,51 @@ async function getAllMeetMetaData(csvName,meetsArr){
     console.log(matchedMeets)
     //do i need to filter the meetsArr???
 
-    //now i need to 
+    //now i need to take matchedMeets and run thru the page again and scrape
     
+
+    async function foo(matchedMeets){
+        for(meetfoo of matchedMeets){
+            console.log('in for loop')
+            console.log(meetfoo)
+        }
+        let [meet, i] = matchedMeets[0];
+        i = i-1;
+
+        let url = 'https://usaweightlifting.sport80.com/public/rankings/results/'
+        const newBrowser = await puppeteer.launch();
+        const newPage = await newBrowser.newPage();
+        await newPage.setViewport({width:1500, height:1000})
+        await newPage.goto(url, {
+            waitUntil: 'networkidle0'
+        })
+        await newPage.screenshot({path: 'newpage.png', fullPage: true})
+        
+
+        // find the element and click on it
+        let selector = `tbody tr:nth-of-type(${i}) td.text-end button.v-btn.v-btn--icon`
+        await newPage.click(selector)
+
+        let viewBtnSelector = 'div.v-list.v-sheet div a div.v-list-item__content div.v-list-item__title';
+        await newPage.waitForSelector(viewBtnSelector)
+
+        await Promise.all([
+            newPage.click(viewBtnSelector),
+            newPage.waitForNavigation('networkidle0'),
+        ]);
+        await newPage.waitForNetworkIdle()
+        let pageUrl = await newPage.url().split('/')
+        let meetUrlNumber = pageUrl[pageUrl.length-1]
+        //add url to meet metadata csv
+
+
+        await getOneMeetCSV(meetUrlNumber, 'meet-'+ meetUrlNumber)
+        
+        await newPage.screenshot({path: 'actionbtn.png', fullPage: true})
+        await newBrowser.close()
+
+    }
+    foo(matchedMeets)
      
 
 
@@ -114,11 +159,11 @@ async function getMeetsOnPage(athletesOnPage, page , csvName){
             let selector = ".data-table div div.v-data-table div.v-data-table__wrapper table tbody tr:nth-of-type("+ index +") td > div"
             let elArr = Array.from(document.querySelectorAll(`${selector}`))
             elArr = elArr.map((x)=>{
-                return  x.textContent
+                return  x.textContent.trim()
             })
             return elArr
         },i)
-        athleteData = athleteData.map((x => x.trim()))
+        
         allAthleteData.push([...athleteData, i])
     }
     const allMeetData = allAthleteData.map(array => [array[0], array[5]])
