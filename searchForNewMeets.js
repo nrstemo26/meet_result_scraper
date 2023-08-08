@@ -80,54 +80,48 @@ async function getAllMeetMetaData(csvName,meetsArr){
     let matchedMeets = allMeetsOnPage.filter(([meetName, index])=>{
         return meetsArr.includes(meetName)
     })
-    console.log(matchedMeets)
+    // console.log(matchedMeets)
     //do i need to filter the meetsArr???
 
     //now i need to take matchedMeets and run thru the page again and scrape
     
 
-    async function foo(matchedMeets){
-        for(meetfoo of matchedMeets){
-            console.log('in for loop')
-            console.log(meetfoo)
+    async function foo(matchedMeets, page){
+        console.log('heres my matched meets',matchedMeets)
+        for(meet of matchedMeets){
+            let [meetName, i] = meet
+            i = i-1;
+            let selector = `tbody tr:nth-of-type(${i}) td.text-end button.v-btn.v-btn--icon`
+            await page.click(selector)
+            
+            let viewBtnSelector = 'div.v-list.v-sheet div a div.v-list-item__content div.v-list-item__title';
+            let viewBtn = 'div.v-list.v-sheet div a';
+            await page.waitForSelector(viewBtnSelector)
+            
+            const meetHref = await page.$eval(viewBtn, anchor => anchor.getAttribute('href'));
+            const meetHrefNum = meetHref.split('/')[4]
+            console.log('heres my new link,',meetHrefNum)
+            await getOneMeetCSV(meetHrefNum, 'meet-'+ meetHrefNum)
         }
-        let [meet, i] = matchedMeets[0];
-        i = i-1;
-
-        let url = 'https://usaweightlifting.sport80.com/public/rankings/results/'
-        const newBrowser = await puppeteer.launch();
-        const newPage = await newBrowser.newPage();
-        await newPage.setViewport({width:1500, height:1000})
-        await newPage.goto(url, {
-            waitUntil: 'networkidle0'
-        })
-        await newPage.screenshot({path: 'newpage.png', fullPage: true})
         
-
         // find the element and click on it
-        let selector = `tbody tr:nth-of-type(${i}) td.text-end button.v-btn.v-btn--icon`
-        await newPage.click(selector)
-
-        let viewBtnSelector = 'div.v-list.v-sheet div a div.v-list-item__content div.v-list-item__title';
-        await newPage.waitForSelector(viewBtnSelector)
-
-        await Promise.all([
-            newPage.click(viewBtnSelector),
-            newPage.waitForNavigation('networkidle0'),
-        ]);
-        await newPage.waitForNetworkIdle()
-        let pageUrl = await newPage.url().split('/')
-        let meetUrlNumber = pageUrl[pageUrl.length-1]
-        //add url to meet metadata csv
-
-
-        await getOneMeetCSV(meetUrlNumber, 'meet-'+ meetUrlNumber)
         
-        await newPage.screenshot({path: 'actionbtn.png', fullPage: true})
-        await newBrowser.close()
+        // await Promise.all([
+        //     newPage.click(viewBtnSelector),
+        //     newPage.waitForNavigation('networkidle0'),
+        // ]);
+        // await newPage.waitForNetworkIdle()
+        // let pageUrl = await newPage.url().split('/')
+        // let meetUrlNumber = pageUrl[pageUrl.length-1]
+        // //add url to meet metadata csv
+
+
+        
+        // await newPage.screenshot({path: 'actionbtn.png', fullPage: true})
+        // await newBrowser.close()
 
     }
-    foo(matchedMeets)
+    await foo(matchedMeets, page)
      
 
 
@@ -154,7 +148,7 @@ async function getAllMeetMetaData(csvName,meetsArr){
 async function getMeetsOnPage(athletesOnPage, page , csvName){
     let allAthleteData =[];
     for(let i = 1; i <= athletesOnPage; i++){
-        console.log('attempt ' + i)
+        // console.log('attempt ' + i)
         let athleteData = await page.evaluate((index)=>{
             let selector = ".data-table div div.v-data-table div.v-data-table__wrapper table tbody tr:nth-of-type("+ index +") td > div"
             let elArr = Array.from(document.querySelectorAll(`${selector}`))
@@ -182,8 +176,8 @@ function handleTotalAthleteString(str){
 
 
 async function searchForNewMeets(meetsArr){
-    console.log('jfskd')
-    console.log(meetsArr)
+    // console.log('jfskd')
+    // console.log(meetsArr)
 
     await getAllMeetMetaData('dingus', meetsArr)
 
