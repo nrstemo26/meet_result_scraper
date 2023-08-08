@@ -26,7 +26,6 @@ async function start(meetNumber, csvName){
     }
     
     const tableHeaderData = await page.evaluate(()=>{
-
         let elArr = Array.from(document.querySelectorAll(".data-table div div.v-data-table div.v-data-table__wrapper table thead tr th > span"))
         elArr = elArr.map((x)=>{
             return  x.textContent
@@ -35,7 +34,7 @@ async function start(meetNumber, csvName){
     })
 
     if(tableHeaderData.length > 0){
-        let headerCSV = tableHeaderData.join(', ');
+        let headerCSV = tableHeaderData.join('| ');
         headerCSV += '\n'
         writeCSV('new-meet-data',csvName, headerCSV);
     }else{
@@ -132,3 +131,7 @@ async function multipleMissingMeets(missingArr){
 
 //ex for scraping
 //getMultipleMeetResults(6000,7000);
+
+module.exports = {
+    start:start
+}
