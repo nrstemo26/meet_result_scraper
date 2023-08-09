@@ -21,6 +21,9 @@ async function writeCSVHeaders(inputCsv){
         headers.push(header);
         });
 
+        //removes action column
+        headers.pop()
+        
         // Write headers to the output CSV
         const outputCsvContent = headers.join('|') + '\n';
         fs.writeFile(outputfileName, outputCsvContent, 'utf8', (err) => {
@@ -131,8 +134,58 @@ async function makeNewMeetMetaData(){
     return outputfileName
 }
 
+
+async function addUrlToMeetCsv(inputCsv, outputCsv, meetUrlData){
+    let meets = [
+        [ '2023 Mavrik Summer Classic', '5955' ],
+        [ 'MO Valley Camp Competition', '5958' ],
+        [ 'Heroic mid summer showdown', '5952' ],
+        [ 'Intrepid Athletics Summer Open', '5951' ],
+        [ "2023 Max's Gym Open", '5940' ]
+      ]
+    // console.log('in here')
+    // console.log(meets)
+    let headersWritten = false;
+
+    const outputStream = fs.createWriteStream(outputCsv, { flags: 'a' });
+    outputStream.write('Meet|Level|Date|Results|Meet Url\n')
+    fs.createReadStream(inputCsv)
+        .pipe(csv({ separator: '|' }))
+        .on('data', (data) => {
+            // Find the corresponding meetUrl from the meets array            
+            const meetName = data['Meet'];
+            const meetUrlInfo = meets.find(item => item[0] === meetName);
+
+            // Add the meetUrl value if found, or an empty string if not
+            const meetUrl = meetUrlInfo ? meetUrlInfo[1] : '';
+
+            // Remove the last value (last column)
+            const rowValues = Object.values(data);
+            const modifiedRow = [...rowValues.slice(0, -1), meetUrl];
+
+            // Write the modified row to the output CSV
+            outputStream.write(modifiedRow.join('|') + '\n');
+        })
+        .on('end', () => {
+            outputStream.end();
+            console.log('CSV processing complete.');
+        });
+}
+
+
+
+
+
+    // add column of meetURl
+    // read csv col 1 and
+    // if meetMame matches the csv meetName
+    // add meetUrl to the column
+
+
+
 module.exports = {
     makeNewMeetMetaData: makeNewMeetMetaData,
+    addUrlToMeetCsv: addUrlToMeetCsv,
 }
 
 
