@@ -6,10 +6,11 @@ const { write } = require('fs');
 const {startBrowserAndGetPage} = require('./utils/scraping_utils')
 
 
-//I need some function to go thru all the other 
-//pages if necessary if the meet isnt found on the first page
+// I need some function to go thru all the other 
+// pages if necessary if the meet isnt found on the first page
+// currently scrapes page one. returns an array with meetName and url
 
-async function getAllMeetMetaData(csvName,meetsArr){
+async function getAllMeetMetaData(csvName, meetsArr){
     //we dont need a meet number
     //the baseurl should preload some shit
     
