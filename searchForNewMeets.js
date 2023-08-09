@@ -6,6 +6,9 @@ const { write } = require('fs');
 const {startBrowserAndGetPage} = require('./utils/scraping_utils')
 
 
+//I need some function to go thru all the other 
+//pages if necessary if the meet isnt found on the first page
+
 async function getAllMeetMetaData(csvName,meetsArr){
     //we dont need a meet number
     //the baseurl should preload some shit
@@ -52,8 +55,8 @@ async function getAllMeetMetaData(csvName,meetsArr){
         const meetHref = await page.$eval(viewBtn, anchor => anchor.getAttribute('href'));
         
         const meetHrefNum = meetHref.split('/')[4]
-        console.log(meetIndex) 
-        console.log('heres my new link,', meetHrefNum)
+        // console.log(meetIndex) 
+        // console.log('heres my new link,', meetHrefNum)
         await browser.close()
         return meetHrefNum;
         
@@ -66,9 +69,7 @@ async function getAllMeetMetaData(csvName,meetsArr){
             let meetUrl = await newBrowserFindUrl(meet)
             matchedMeetsUrl.push([meet,meetUrl])
         }
-        console.log(matchedMeetsUrl)
         return matchedMeetsUrl
-
     }
     let meetArrWithUrl = await getMeetNameAndUrl(matchedMeets, page)
 
@@ -132,6 +133,9 @@ function handleTotalAthleteString(str){
     return curr < max;
 }
 
+
+//i need to do some shit if there isn't a new meet on the 
+//first page and we need to search in a few layers
 
 async function searchForNewMeets(meetsArr){
     const meetsArrWithUrl = await getAllMeetMetaData('dingus', meetsArr)
