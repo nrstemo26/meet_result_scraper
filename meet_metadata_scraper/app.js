@@ -4,6 +4,7 @@ const {getDateMMDDYYYY} = require('../utils/date_utils');
 const { write } = require('fs');
 
 async function getAllMeetMetaData(csvName){
+    console.log('running metadata scraper')
     //we dont need a meet number
     //the baseurl should preload some shit
     
@@ -49,6 +50,7 @@ async function getAllMeetMetaData(csvName){
         page.click("div.v-date-picker-table table tbody tr td:nth-of-type(1) button.v-btn div.v-btn__content")  
     }
 
+    //apply should always be there. after clicking the date so we might not need to 
     async function clickApply(){
         console.log('clicking apply')
         await page.waitForTimeout(2000)
@@ -73,10 +75,22 @@ async function getAllMeetMetaData(csvName){
         //this clicks and opens the date selector
         await page.click('#date_range_start')
 
-        for(let i=0; i<3; i++){
-            console.log(i)
-            await moveBackMonth()
+        //this needs to be a loop that goes back recursively until
+        //it finds the month name being January 2011
+        let month = '';
+        while(month != 'January 2011'){
+            await moveBackMonth();
+            month = await page.evaluate(()=>{
+                const monthSelector = 'div.v-date-picker-header__value div.accent--text button';
+                return document.querySelector(monthSelector).textContent.trim()
+            })
+            console.log(month)
         }
+        console.log('we broke the loop')
+        // for(let i=0; i<120; i++){
+        //     console.log(i)
+        //     await moveBackMonth()
+        // }
         
         await clickDate()
         await clickApply()
@@ -151,9 +165,12 @@ function handleTotalAthleteString(str){
     return curr < max;
 }
 
-
-
 console.log(getDateMMDDYYYY())
+
+module.exports = {
+    getAllMeetMetaData: getAllMeetMetaData
+}
+
    
 //all-meets-MM-DD-YYYYY
 
