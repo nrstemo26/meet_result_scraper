@@ -30,18 +30,17 @@ async function getAllMeetMetaData(csvName){
 
     async function clickDate(){
         console.log('getting the date')
-        page.click("div.v-date-picker-table table tbody tr td:nth-of-type(1) button.v-btn div.v-btn__content")  
+        await page.waitForSelector('div.v-date-picker-table table tbody tr td:nth-of-type(1) button.v-btn div.v-btn__content')
+        await page.click("div.v-date-picker-table table tbody tr td:nth-of-type(1) button.v-btn div.v-btn__content")  
     }
 
     //apply should always be there. after clicking the date so we might not need to 
     async function clickApply(){
         console.log('clicking apply')
-        //we need to wait for network idel
-        await Promise.all([
-            page.waitForNetworkIdle(),
-            page.click("div.v-card__actions.justify-end button.primary.my-2.v-btn.v-btn--is-elevated")  
-        ]);
-    
+        await page.waitForSelector("div.v-card__actions.justify-end button.primary.my-2.v-btn.v-btn--is-elevated")
+        await page.click("div.v-card__actions.justify-end button.primary.my-2.v-btn.v-btn--is-elevated", {
+            waitUntil: 'networkidle0'
+        })     
     }
 
     async function clickFilter(){
@@ -60,19 +59,22 @@ async function getAllMeetMetaData(csvName){
     
     let month = '';
     //it finds the month name being January 2011
-    while(month != 'January 2011'){
+    while(month != 'January 2021'){
         // console.log('in loop')
         await moveBackMonth();
         month = await page.evaluate(()=>{
             return document.querySelector('div.v-date-picker-header__value div.accent--text button').textContent.trim()
         })
-        // console.log(month)
+        console.log(month)
     }
     console.log('got to', month)
     
+
     await clickDate()
     await clickApply() 
-
+    
+    //waits for the data to actually load before we get all of the meet data
+    await page.waitForNetworkIdle()
 
     const tableHeaderData = await page.evaluate(()=>{
         let elArr = Array.from(document.querySelectorAll(".data-table div div.v-data-table div.v-data-table__wrapper table thead tr th > span"))
