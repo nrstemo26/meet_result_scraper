@@ -17,7 +17,6 @@ async function getAllMeetMetaData(csvName){
     await page.goto(url, {
         waitUntil: 'networkidle0'
     })
-    //good to here
 
     async function getPageData(){
         return await page.$eval(
@@ -25,84 +24,55 @@ async function getAllMeetMetaData(csvName){
             x =>  x.textContent
         )
     }
-
-    //adjust the date situation
-    //get filter button  
-    // click filter button
-    //take screenshot
-    //get date start range button
-    //click date start range button
-    //move backwards in time
-    
+   
     async function moveBackMonth(){
-        // get the date range inner text
-        console.log('working our way back')
-        await page.waitForTimeout(2000)
-        page.click("div.v-date-picker-header button.v-btn.v-btn--icon.v-btn--round.theme--light.v-size--default")
-        // selector 'div.v-dialog div.v-card div.v-card__text div.s80-date-picker div.v-input div.v-input__control div.v-input__Slot div.v-text-field label  '
-        // text should say Date Range Start
+        await page.click("div.v-date-picker-header button.v-btn.v-btn--icon.v-btn--round.theme--light.v-size--default")
     }
+
     async function clickDate(){
         console.log('getting the date')
-        await page.waitForTimeout(2000)
-        const bar = await page.$eval("div.v-date-picker-table table tbody tr td:nth-of-type(1) button.v-btn div.v-btn__content", el => el.textContent)
-        // console.log(bar)
         page.click("div.v-date-picker-table table tbody tr td:nth-of-type(1) button.v-btn div.v-btn__content")  
     }
 
     //apply should always be there. after clicking the date so we might not need to 
     async function clickApply(){
         console.log('clicking apply')
-        await page.waitForTimeout(2000)
-        page.click("div.v-card__actions.justify-end button.primary.my-2.v-btn.v-btn--is-elevated")  
+        //we need to wait for network idel
+        await Promise.all([
+            page.waitForNetworkIdle(),
+            page.click("div.v-card__actions.justify-end button.primary.my-2.v-btn.v-btn--is-elevated")  
+        ]);
     
     }
 
     async function clickFilter(){
         console.log('clicking filter button')
-        await Promise.all([
-            page.waitForNetworkIdle(),
-            page.click('.data-table div.container.pb-0 div.s80-filter div.row.no-gutters .v-badge button.v-btn'),
-        ]);
-
-        await page.waitForTimeout(2000)
-        
-        const bar = await page.$eval("#date_range_start", el => el.value)
-        // console.log(bar)
-        
-        page.screenshot({path: 'filter.png', fullPage: true})
-        
-        //this clicks and opens the date selector
-        await page.click('#date_range_start')
-
-        //this needs to be a loop that goes back recursively until
-        //it finds the month name being January 2011
-        let month = '';
-        while(month != 'January 2011'){
-            await moveBackMonth();
-            month = await page.evaluate(()=>{
-                const monthSelector = 'div.v-date-picker-header__value div.accent--text button';
-                return document.querySelector(monthSelector).textContent.trim()
-            })
-            console.log(month)
-        }
-        console.log('we broke the loop')
-        // for(let i=0; i<120; i++){
-        //     console.log(i)
-        //     await moveBackMonth()
-        // }
-        
-        await clickDate()
-        await clickApply()
-        await page.waitForTimeout(5000)         
+        await page.click('.data-table div.container.pb-0 div.s80-filter div.row.no-gutters .v-badge button.v-btn');      
     }
-
-
     
     await clickFilter()
-    // console.log('taking screenshot')
-    // await page.screenshot({path: 'meet.png', fullPage: true})
 
+    //waits for the date picker to be available and then clicks it
+    await page.waitForSelector('#date_range_start', {visible:true})
+    await page.click('#date_range_start')
+    
+    //waits for the < button to be visible and clickable
+    await page.waitForSelector('div.v-date-picker-header__value div.accent--text', { visible:true })
+    
+    let month = '';
+    //it finds the month name being January 2011
+    while(month != 'January 2011'){
+        // console.log('in loop')
+        await moveBackMonth();
+        month = await page.evaluate(()=>{
+            return document.querySelector('div.v-date-picker-header__value div.accent--text button').textContent.trim()
+        })
+        // console.log(month)
+    }
+    console.log('got to', month)
+    
+    await clickDate()
+    await clickApply() 
 
 
     const tableHeaderData = await page.evaluate(()=>{
