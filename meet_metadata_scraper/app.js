@@ -1,6 +1,5 @@
 const puppeteer = require('puppeteer')
 const { createCSVfromArray, writeCSV } = require('../utils/csv_utils');
-const {getDateMMDDYYYY} = require('../utils/date_utils');
 const { write } = require('fs');
 
 async function getAllMeetMetaData(csvName){
@@ -135,7 +134,6 @@ function handleTotalAthleteString(str){
     return curr < max;
 }
 
-console.log(getDateMMDDYYYY())
 
 module.exports = {
     getAllMeetMetaData: getAllMeetMetaData
