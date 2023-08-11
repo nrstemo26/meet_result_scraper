@@ -1,17 +1,12 @@
 const fs = require('fs');
 const csv = require('csv-parser');
 const { makeNewMeetMetaData} = require('./meetMetadataCsv')
-const {start:getOneMeetCSV} = require('./app')
-
+const {start:getOneMeetCsv} = require('./app')
 const { getWeeksAndYears } = require('./utils/date_utils')
 const path = require('path');
+const {extractMeetUrls} = require('./utils/csv_utils')
 
-// Specify the input CSV file path
-
-// now this needs to read that csv get the meet name and have that as an array
-// file name shit can be in here
 async function run (){
-    //this block of code may move to a different file and then variables turn into args
     const { currentYear, currentWeek, previousYear, previousWeek} = getWeeksAndYears();
     const currentFile = `./data/meet_metadata/${currentYear}_week_${currentWeek}.csv`;
     const previousFile = `./data/meet_metadata/${previousYear}_week_${previousWeek}.csv`;
@@ -38,6 +33,20 @@ async function run (){
     
     // after that we need to get the url's from the meet
     // scrape meets off of
+    
+   
+    // function to read CSV and get the meetUrls in an array or something
+    const newMeetUrls = await extractMeetUrls(outputFileName)
+    // console.log('new meet urls: ', newMeetUrls)
+    for(let i = 0; i < newMeetUrls.length; i++){
+        console.log('in here')
+        const meetUrl = newMeetUrls[i]
+        console.log('meeturl: ',meetUrl)
+
+        //                   meetnumber //csvName
+        // await getOneMeetCsv(meetUrl, `${outputCsvPath}meet_${meetUrl}`)
+    }
+
     console.log('done')
 }
 
