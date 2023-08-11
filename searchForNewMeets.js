@@ -1,9 +1,10 @@
+///this isnt used anywhere
+
 const puppeteer = require('puppeteer')
 const {start: getOneMeetCSV} = require('./app')
 const { createCSVfromArray, writeCSV } = require('./utils/csv_utils');
 const {getDateMMDDYYYY} = require('./utils/date_utils');
 const { write } = require('fs');
-const {startBrowserAndGetPage} = require('./utils/scraping_utils')
 
 
 // I need some function to go thru all the other 
@@ -34,6 +35,7 @@ async function getAllMeetMetaData(csvName, meetsArr){
         return meetsArr.includes(meetName)
     })
     
+    //this doesn't need to be called
     async function newBrowserFindUrl(meetName){
         let url = 'https://usaweightlifting.sport80.com/public/rankings/results/'
         // let url = baseUrl + meetNumber;
@@ -63,6 +65,7 @@ async function getAllMeetMetaData(csvName, meetsArr){
         
     }
 
+    //dont need this
     async function getMeetNameAndUrl(matchedMeets, page){
         let matchedMeetsUrl = []
         for(let i=0; i<matchedMeets.length; i++){
@@ -72,6 +75,7 @@ async function getAllMeetMetaData(csvName, meetsArr){
         }
         return matchedMeetsUrl
     }
+    //dont need this
     let meetArrWithUrl = await getMeetNameAndUrl(matchedMeets, page)
 
     console.log('getting resourses...')
@@ -145,5 +149,6 @@ async function searchForNewMeets(meetsArr){
 
 module.exports ={
     searchForNewMeets: searchForNewMeets,
+    getAllMeetMetaData:getAllMeetMetaData,
 }
 
