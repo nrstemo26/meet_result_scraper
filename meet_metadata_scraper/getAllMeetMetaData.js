@@ -110,10 +110,8 @@ async function getAllMeetMetaData(csvName){
 }
 //not working with the index situation
 async function getMeetUrl(index, page){
-
     //click on a random element first
     await page.click('h2.flex-shrink-0.align-self-end.subtitle-1', {waitUntil:'visible'})
-  
     
     //click the elipses button on the specific element
     await page.click(`tbody tr:nth-of-type(${index}) td.text-end button.v-btn.v-btn--icon`)        
@@ -122,13 +120,10 @@ async function getMeetUrl(index, page){
     let viewBtnSelector = 'div.v-menu__content.menuable__content__active div.v-list.v-sheet div a div.v-list-item__content div.v-list-item__title';
     await page.waitForSelector(viewBtnSelector, {waitUntil:'visible'})
     
-    
     //get the href value of the view button
     let viewBtn = 'div.v-menu__content.menuable__content__active div.v-list.v-sheet div a';
     const meetHref = await page.$eval(viewBtn, anchor => anchor.getAttribute('href'));
     const meetHrefNum = meetHref.split('/')[4]
-    
-    console.log(meetHrefNum)
     return meetHrefNum;
 }
 
