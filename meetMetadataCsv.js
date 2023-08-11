@@ -1,16 +1,29 @@
+// so i have issues thinking about how to proceed because idk if i should 
+// have meetUrl all of the csv's should
 // todos:
 // make this dynamic off of files of chosing for csvFiles var
+
+//has hardcoded meet data atm
+//addUrlToMeetCsv() has hardcoded meetdata
 
 const fs = require('fs');
 const csv = require('csv-parser');
 const path = require('path');
-const {getDateMMDDYYYY: getDate } = require('./utils/date_utils')
+const { getWeeksAndYears } = require('./utils/date_utils')
 
-const csvFiles = ['./data/meet-metadata/111.csv', './data/meet-metadata/222.csv', ]; // List of your CSV files
 
-const outputCsvPath = 'weekly_update'
-const outputFile = getDate() + '-metadata.csv'
+//this block of code may move to a different file and then variables turn into args
+const { currentYear, currentWeek, previousYear, previousWeek} = getWeeksAndYears();
+const currentFile = `./data/meet_metadata_${currentYear}_week_${currentWeek}.csv`;
+const previousFile = `./data/meet_metadata_${previousYear}_week_${previousWeek}.csv`;
+// const csvFiles = [previousFile, currentFile];
+const csvFiles = ['./data/meet-metadata/111.csv', './data/meet-metadata/222.csv', ]; 
+
+//new meets will go in the same folder as this
+const outputCsvPath = `./data/weekly_updates/weekly_update_${currentYear}_week_${currentWeek}`
+const outputFile = 'new-meet-metadata.csv'
 const outputfileName = outputCsvPath + '/' + outputFile
+
 
 async function writeCSVHeaders(inputCsv){
     const headers = [];
@@ -37,6 +50,7 @@ async function writeCSVHeaders(inputCsv){
     return outputfileName;
 }
 
+//this seems good
 //Read the CSV files and store rows in the rowsMap
 async function readCSV(file) {
   return new Promise((resolve, reject) => {
@@ -59,6 +73,8 @@ async function readCSV(file) {
  });
 }
 
+//i think see note at ***
+//good besides ***
 async function saveCSV(file, data, headers) {
     return new Promise((resolve, reject) => {
         const ws = fs.createWriteStream(file, {flags: 'a'});
@@ -66,6 +82,7 @@ async function saveCSV(file, data, headers) {
         // Write rows without quotes
         for (const row of data) {
             const rowValues = headers.map(header => row[header].toString());
+            //*** i think this needs to be join('|') + \n */
             ws.write(rowValues.join(",") + "\n");
         }
 
@@ -76,6 +93,7 @@ async function saveCSV(file, data, headers) {
 }
  
 //Compare rows and find unmatched rows
+//do i need the
 async function findUnmatchedRows() {
     const allRows = {};
 
@@ -103,12 +121,15 @@ async function findUnmatchedRows() {
     return { headers, unmatchedRows };
 }
 
+//i think this is good i just need to change outputCSVPath
 //makes the file if it doesn't exist
 const unmatchedOutputDir = path.join(outputCsvPath);
 if (!fs.existsSync(unmatchedOutputDir)) {
   fs.mkdirSync(unmatchedOutputDir, { recursive: true, });
 }
 
+//headers shouldn't exist? im setting them elsewhere
+//refactor that as needed
 //Write unmatched rows to separate CSV files
 async function writeUnmatchedRows() {
     const { headers, unmatchedRows } = await findUnmatchedRows();
@@ -116,11 +137,15 @@ async function writeUnmatchedRows() {
         if (rows.length > 0) {
             const outputPath = path.join(unmatchedOutputDir, outputFile);
             await saveCSV(outputPath, rows, headers);
+        }else{
+            console.log('no new meets')
         }
     }
 }
 
+
 async function makeNewMeetMetaData(){
+    
     await writeCSVHeaders(csvFiles[1])
     .then((res) => {
         console.log('Headers written to CSV files successfully.')
@@ -134,7 +159,8 @@ async function makeNewMeetMetaData(){
     return outputfileName
 }
 
-
+//has hardcoded meet data atm
+//addUrlToMeetCsv() has hardcoded meetdata
 async function addUrlToMeetCsv(inputCsv, outputCsv, meetUrlData){
     let meets = [
         [ '2023 Mavrik Summer Classic', '5955' ],
