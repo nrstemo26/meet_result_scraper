@@ -1,9 +1,10 @@
 //writeCSV may need to be refactored to my current situation
+//needs a different path because i am making the folder structure with it when i could jsut have it be its own
+//full file path
+//may need some refactoring to move thru quickly
 
 const puppeteer = require('puppeteer')
 const { createCSVfromArray, writeCSV } = require('./utils/csv_utils');
-
-///csv helper files/folders
 
 
 async function start(meetNumber, csvName){
