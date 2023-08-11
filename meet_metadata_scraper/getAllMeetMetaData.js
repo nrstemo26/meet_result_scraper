@@ -60,7 +60,7 @@ async function getAllMeetMetaData(csvName){
     
     let month = '';
     //it finds the month name being January 2011
-    while(month != 'January 2021'){
+    while(month != 'January 2023'){
         // console.log('in loop')
         await moveBackMonth();
         month = await page.evaluate(()=>{
@@ -88,17 +88,22 @@ async function getAllMeetMetaData(csvName){
     headerCSV += '\n'
     writeCSV('meet-metadata',csvName, headerCSV);
 
+    console.log('starting scraping')
+
+    //do a selector that i
     
-    await getMeetsOnPage(30, page, csvName);
+    await getMeetsOnPage(getAmountMeetsOnPage(await getPageData()), page, csvName);
+    console.log(await getPageData())
 
     while(await handleTotalAthleteString(await getPageData())){
         console.log('getting meet metadata...')
-        console.log(await getPageData())
         await Promise.all([
             page.waitForNetworkIdle(),
             page.click('.data-table div div.v-data-table div.v-data-footer div.v-data-footer__icons-after'),
         ]);
-        await getMeetsOnPage(30, page, csvName)
+        console.log(await getPageData())
+        
+        await getMeetsOnPage(getAmountMeetsOnPage(await getPageData()), page, csvName)
     }
 
     console.log('getting resourses...')
@@ -129,21 +134,23 @@ async function getMeetUrl(index, page){
 
 async function getMeetsOnPage(athletesOnPage, page , csvName){
     let allAthleteData =[];
-    for(let i = 1; i <= athletesOnPage; i++){
-        console.log(i)
-        let meetUrl = await getMeetUrl(i, page);
+    for(let i = 1; i <= athletesOnPage+1; i++){
+        // console.log(i)
+        //im not stopping the loop when there are no lifters left
+        //im pretty sure this is why there is whitespace
+        //if there
+        meetUrl = await getMeetUrl(i, page);
         let athleteData = await page.evaluate((index)=>{
             let selector = ".data-table div div.v-data-table div.v-data-table__wrapper table tbody tr:nth-of-type("+ index +") td > div"
             let elArr = Array.from(document.querySelectorAll(`${selector}`))
             elArr = elArr.map((x)=>{
                 return  x.textContent.trim()
             })
-
             return elArr
         },i)
         
         athleteData[athleteData.length-1] = meetUrl
-        console.log(athleteData)
+        // console.log(athleteData)
         allAthleteData.push(athleteData)
     }
 
@@ -158,6 +165,14 @@ function handleTotalAthleteString(str){
     curr = parseInt(curr)
     max = parseInt(max)
     return curr < max;
+}
+
+function getAmountMeetsOnPage(str){
+    let x = str.split(' of ')[0]
+    let[low, up] = x.split('-');
+    low = parseInt(low)
+    up = parseInt(up)
+    return up - low
 }
 
 
