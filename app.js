@@ -1,6 +1,7 @@
+//writeCSV may need to be refactored to my current situation
+
 const puppeteer = require('puppeteer')
 const { createCSVfromArray, writeCSV } = require('./utils/csv_utils');
-
 
 ///csv helper files/folders
 
@@ -34,7 +35,7 @@ async function start(meetNumber, csvName){
     })
 
     if(tableHeaderData.length > 0){
-        let headerCSV = tableHeaderData.join('| ');
+        let headerCSV = tableHeaderData.join('|');
         headerCSV += '\n'
         writeCSV('new-meet-data',csvName, headerCSV);
     }else{

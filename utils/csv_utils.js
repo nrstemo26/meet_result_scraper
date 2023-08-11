@@ -9,7 +9,7 @@ async function extractMeetUrls(csvFilePath) {
         fs.createReadStream(csvFilePath)
           .pipe(csv({ separator: '|' }))
           .on('data', (row) => {
-            meetUrls.push(row[' Meet Url'].trim());
+            meetUrls.push(row['Meet Url'].trim());
           })
           .on('end', () => {
             console.log('Meet URLs extracted:', meetUrls);
