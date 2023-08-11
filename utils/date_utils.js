@@ -55,8 +55,7 @@ return {
 }
   
   // Call the function and use the results
-  const newEntries = getWeeksAndYears();
-  console.log("New entries:", newEntries);
+//   const newEntries = getWeeksAndYears();
 
 module.exports = {
     getDateMMDDYYYY,
