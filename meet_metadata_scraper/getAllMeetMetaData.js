@@ -60,7 +60,7 @@ async function getAllMeetMetaData(csvName){
     
     let month = '';
     //it finds the month name being January 2011
-    while(month != 'January 2023'){
+    while(month != 'January 2011'){
         // console.log('in loop')
         await moveBackMonth();
         month = await page.evaluate(()=>{
@@ -135,10 +135,7 @@ async function getMeetUrl(index, page){
 async function getMeetsOnPage(athletesOnPage, page , csvName){
     let allAthleteData =[];
     for(let i = 1; i <= athletesOnPage+1; i++){
-        // console.log(i)
-        //im not stopping the loop when there are no lifters left
-        //im pretty sure this is why there is whitespace
-        //if there
+        //can remove to have the scraper move quicker
         meetUrl = await getMeetUrl(i, page);
         let athleteData = await page.evaluate((index)=>{
             let selector = ".data-table div div.v-data-table div.v-data-table__wrapper table tbody tr:nth-of-type("+ index +") td > div"
@@ -148,8 +145,10 @@ async function getMeetsOnPage(athletesOnPage, page , csvName){
             })
             return elArr
         },i)
-        
+        //needs to change too
         athleteData[athleteData.length-1] = meetUrl
+        //removes last element the non used action empty guy?
+        //athleteData.pop()
         // console.log(athleteData)
         allAthleteData.push(athleteData)
     }
@@ -180,8 +179,6 @@ module.exports = {
     getAllMeetMetaData: getAllMeetMetaData
 }
 
-   
-//all-meets-MM-DD-YYYYY
 
 //getAllMeetMetaData('foo-'+ getDateMMDDYYYY())
 // getAllMeetMetaData('foo-7-28-2023')
