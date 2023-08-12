@@ -1,13 +1,10 @@
-//writeCSV may need to be refactored to my current situation
-//needs a different path because i am making the folder structure with it when i could jsut have it be its own
-//full file path
 //may need some refactoring to move thru quickly
-
 const puppeteer = require('puppeteer')
 const { createCSVfromArray, writeCSV } = require('./utils/csv_utils');
+const {handleTotalAthleteString, getAmountMeetsOnPage} = require('./utils/string_utils')
+const {getAthletesOnPage} = require('./utils/scraping_utils')
 
-
-async function start(meetNumber, csvName){
+async function start(meetNumber, filePath){
     let baseUrl = 'https://usaweightlifting.sport80.com/public/rankings/results/'
     let url = baseUrl + meetNumber;
    
@@ -38,23 +35,24 @@ async function start(meetNumber, csvName){
     if(tableHeaderData.length > 0){
         let headerCSV = tableHeaderData.join('|');
         headerCSV += '\n'
-        writeCSV('new-meet-data',csvName, headerCSV);
+        writeCSV(filePath, headerCSV);
     }else{
         await browser.close()
         throw new Error('no meet available')
     }
 
 
-    await getAthletesOnPage(30, page, csvName);
+    await getAthletesOnPage(getAmountMeetsOnPage(await getPageData()), page, filePath);
+    console.log(await getPageData())
 
     while(await handleTotalAthleteString(await getPageData())){
         console.log('getting resourses...')
-        console.log(await getPageData())
         await Promise.all([
             page.waitForNetworkIdle(),
             page.click('.data-table div div.v-data-table div.v-data-footer div.v-data-footer__icons-after'),
         ]);
-        await getAthletesOnPage(30, page, csvName)
+        console.log(await getPageData())
+        await getAthletesOnPage(getAmountMeetsOnPage(await getPageData()), page, filePath)
     }
 
     console.log('getting resourses...')
@@ -64,32 +62,26 @@ async function start(meetNumber, csvName){
     await browser.close();
 }
 
-async function getAthletesOnPage(athletesOnPage, page , csvName){
-    let allAthleteData =[];
-    for(let i = 1; i <= athletesOnPage; i++){
-        let athleteData = await page.evaluate((index)=>{
-            let selector = ".data-table div div.v-data-table div.v-data-table__wrapper table tbody tr:nth-of-type("+ index +") td > div"
-            let elArr = Array.from(document.querySelectorAll(`${selector}`))
-            elArr = elArr.map((x)=>{
-                return  x.textContent
-            })
-            return elArr
-        },i)
-        athleteData = athleteData.map(x=> x.replace(',',' ').trim())
-        allAthleteData.push(athleteData)
-    }
+// async function getAthletesOnPage(athletesOnPage, page , filePath){
+//     let allAthleteData =[];
+//     for(let i = 1; i <= athletesOnPage; i++){
+//         let athleteData = await page.evaluate((index)=>{
+//             let selector = ".data-table div div.v-data-table div.v-data-table__wrapper table tbody tr:nth-of-type("+ index +") td > div"
+//             let elArr = Array.from(document.querySelectorAll(`${selector}`))
+//             elArr = elArr.map((x)=>{
+//                 return  x.textContent.trim()
+//             })
+//             return elArr
+//         },i)
+//         // athleteData = athleteData.map(x=> x.replace(',',' ').trim())
 
-    let weightliftingCSV = createCSVfromArray(allAthleteData);
-    writeCSV('new-meet-data',csvName, weightliftingCSV)    
-}
+//         allAthleteData.push(athleteData)
+//     }
 
-function handleTotalAthleteString(str){
-    let [curr, max] = str.split(' of ')
-    curr = curr.split('-')[1]
-    curr = parseInt(curr)
-    max = parseInt(max)
-    return curr < max;
-}
+//     let weightliftingCSV = createCSVfromArray(allAthleteData);
+//     writeCSV(filePath, weightliftingCSV)    
+// }
+
 
 
 async function getMultipleMeetResults(start, end){
@@ -107,7 +99,6 @@ async function getMultipleMeetResults(start, end){
 
     console.log('no meets at ids \n' + noMeet);
 }
-
 
 async function multipleMissingMeets(missingArr){
     let noMeet = [];
