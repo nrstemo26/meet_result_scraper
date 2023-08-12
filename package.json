@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon app.js",
-    "meta-data": "nodemon meet_metadata_scraper/app.js",
+    "metadata": "nodemon meet_metadata_scraper/getAllMeetMetaData.js",
     "compare-metadata": "nodemon main.js"
   },
   "author": "",
