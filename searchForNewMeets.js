@@ -1,4 +1,6 @@
-///this isnt used anywhere
+//NOT USED!!!!!!!!!!!!!!!!!
+//this could be repurposed if its really slow to scrape with 
+//getting every url every
 
 const puppeteer = require('puppeteer')
 const {start: getOneMeetCSV} = require('./app')
