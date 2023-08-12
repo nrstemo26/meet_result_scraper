@@ -1,10 +1,11 @@
 const puppeteer = require('puppeteer')
 const { createCSVfromArray, writeCSV } = require('../utils/csv_utils');
 const { write } = require('fs');
+const {handleTotalAthleteString,getAmountMeetsOnPage} = require('../utils/string_utils')
 
 
 //this could just grab the meet url?
-async function getAllMeetMetaData(csvName){
+async function getAllMeetMetaData(filePath){
     console.log('running metadata scraper')
     
     
@@ -84,15 +85,14 @@ async function getAllMeetMetaData(csvName){
         })
         return [...elArr.slice(0,-1),'Meet Url']
     })
-    let headerCSV = tableHeaderData.join('| ');
+    let headerCSV = tableHeaderData.join('|');
     headerCSV += '\n'
-    writeCSV('meet-metadata',csvName, headerCSV);
+    writeCSV(filePath, headerCSV);
 
     console.log('starting scraping')
 
-    //do a selector that i
     
-    await getMeetsOnPage(getAmountMeetsOnPage(await getPageData()), page, csvName);
+    await getMeetsOnPage(getAmountMeetsOnPage(await getPageData()), page, filePath);
     console.log(await getPageData())
 
     while(await handleTotalAthleteString(await getPageData())){
@@ -103,7 +103,7 @@ async function getAllMeetMetaData(csvName){
         ]);
         console.log(await getPageData())
         
-        await getMeetsOnPage(getAmountMeetsOnPage(await getPageData()), page, csvName)
+        await getMeetsOnPage(getAmountMeetsOnPage(await getPageData()), page, filePath)
     }
 
     console.log('getting resourses...')
@@ -132,7 +132,7 @@ async function getMeetUrl(index, page){
     return meetHrefNum;
 }
 
-async function getMeetsOnPage(athletesOnPage, page , csvName){
+async function getMeetsOnPage(athletesOnPage, page , filePath){
     let allAthleteData =[];
     for(let i = 1; i <= athletesOnPage+1; i++){
         //can remove to have the scraper move quicker
@@ -154,31 +154,11 @@ async function getMeetsOnPage(athletesOnPage, page , csvName){
     }
 
     let weightliftingCSV = createCSVfromArray(allAthleteData);
-    writeCSV('meet-metadata',csvName, weightliftingCSV)    
+    writeCSV(filePath, weightliftingCSV)    
 }
 
-
-function handleTotalAthleteString(str){
-    let [curr, max] = str.split(' of ')
-    curr = curr.split('-')[1]
-    curr = parseInt(curr)
-    max = parseInt(max)
-    return curr < max;
-}
-
-function getAmountMeetsOnPage(str){
-    let x = str.split(' of ')[0]
-    let[low, up] = x.split('-');
-    low = parseInt(low)
-    up = parseInt(up)
-    return up - low
-}
 
 
 module.exports = {
     getAllMeetMetaData: getAllMeetMetaData
 }
-
-
-//getAllMeetMetaData('foo-'+ getDateMMDDYYYY())
-// getAllMeetMetaData('foo-7-28-2023')
