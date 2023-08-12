@@ -64,7 +64,7 @@ async function saveCSV(file, data, headers) {
         for (const row of data) {
             const rowValues = headers.map(header => row[header].toString());
             //*** i think this needs to be join('|') + \n */
-            ws.write(rowValues.join(",") + "\n");
+            ws.write(rowValues.join("|") + "\n");
         }
         
         ws.end();
