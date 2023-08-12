@@ -102,13 +102,6 @@ async function getAllMeetMetaData(filePath, searchDate){
 }
 
 
-// async function start(){
-//     await getAllMeetMetaData('foo.csv', 'January 2023')
-//     console.log('deez')
-
-// }
-// start()
-
 module.exports = {
     getAllMeetMetaData: getAllMeetMetaData
 }
