@@ -11,7 +11,8 @@ async function extractMeetUrls(csvFilePath) {
           .on('data', (row) => {
             console.log(row)
             //needs to remove leading whitespace becasue future scrapers wont have whitespace between pipes
-            meetUrls.push(row[' Meet Url'].trim());
+            // meetUrls.push(row[' Meet Url'].trim());
+            meetUrls.push(row['Meet Url'].trim());
           })
           .on('end', () => {
             console.log('Meet URLs extracted:', meetUrls);
