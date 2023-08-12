@@ -9,7 +9,9 @@ async function extractMeetUrls(csvFilePath) {
         fs.createReadStream(csvFilePath)
           .pipe(csv({ separator: '|' }))
           .on('data', (row) => {
-            meetUrls.push(row['Meet Url'].trim());
+            console.log(row)
+            //needs to remove leading whitespace becasue future scrapers wont have whitespace between pipes
+            meetUrls.push(row[' Meet Url'].trim());
           })
           .on('end', () => {
             console.log('Meet URLs extracted:', meetUrls);
@@ -31,9 +33,9 @@ function createCSVfromArray(arr){
 }
 
 
-async function writeCSV(folderName, fileName, data){
-    let fullPath = `./data/${folderName}/${fileName}.csv`;
-    await fsPromise.writeFile(fullPath, data, {flag:"a+"}, err =>{
+async function writeCSV(filePath, data){
+    // let fullPath = `./data/${folderName}/${fileName}.csv`;
+    await fsPromise.writeFile(filePath, data, {flag:"a+"}, err =>{
         if(err){
             console.error(err);
         }
