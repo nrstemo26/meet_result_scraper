@@ -1,17 +1,18 @@
 const fs = require('fs');
+const path = require('path');
 const csv = require('csv-parser');
 const { makeNewMeetMetaData} = require('./meetMetadataCsv')
 const {start:getOneMeetCsv} = require('./app')
 const { getWeeksAndYears } = require('./utils/date_utils')
-const path = require('path');
 const {extractMeetUrls} = require('./utils/csv_utils')
+const {getAllMeetMetaData} = require('./meet_metadata_scraper/getAllMeetMetaData')
 
 async function run (){
     const { currentYear, currentWeek, previousYear, previousWeek} = getWeeksAndYears();
     const currentFile = `./data/meet_metadata/${currentYear}_week_${currentWeek}.csv`;
     const previousFile = `./data/meet_metadata/${previousYear}_week_${previousWeek}.csv`;
-    console.log(currentFile)
-    console.log(previousFile)
+    // console.log(currentFile)
+    // console.log(previousFile)
     const csvFiles = [previousFile, currentFile];
     
     //new meets will go in the same folder as this
@@ -19,32 +20,37 @@ async function run (){
     const outputFile = 'new_meet_metadata.csv'
     const outputFileName = outputCsvPath + '/' + outputFile
     
+    
+    //needs a date now January 2011
+    await getAllMeetMetaData(`./data/meet_metadata/${currentYear}_week_${currentWeek}.csv`, 'January 2011')
+    
     //makes the file if it doesn't exist
     const unmatchedOutputDir = path.join(outputCsvPath);
     if (!fs.existsSync(unmatchedOutputDir)) {
         fs.mkdirSync(unmatchedOutputDir, { recursive: true, });
     }
     
+    
     console.log('getting new meet metadata')
     console.log(getWeeksAndYears())
     
+    //* */
     //gets unmatched meets versus previous weeks scraping
     await makeNewMeetMetaData(csvFiles, outputFileName, outputFile, unmatchedOutputDir)
     
-    // after that we need to get the url's from the meet
-    // scrape meets off of
-    
    
     // function to read CSV and get the meetUrls in an array or something
+    // const newMeetUrls = await extractMeetUrls('2023_meets_metadata.csv')
     const newMeetUrls = await extractMeetUrls(outputFileName)
     // console.log('new meet urls: ', newMeetUrls)
     for(let i = 0; i < newMeetUrls.length; i++){
-        console.log('in here')
+        console.log(`${i+1} of ${newMeetUrls.length}`)
         const meetUrl = newMeetUrls[i]
-        console.log('meeturl: ',meetUrl)
+        console.log('meeturl: ', meetUrl)
 
-        //                   meetnumber //csvName
-        // await getOneMeetCsv(meetUrl, `${outputCsvPath}meet_${meetUrl}`)
+        
+        // await getOneMeetCsv(meetUrl, `./data/2023_meets/meet_${meetUrl}.csv`)
+        await getOneMeetCsv(meetUrl, `${outputCsvPath}/meet_${meetUrl}.csv`)
     }
 
     console.log('done')
@@ -53,7 +59,6 @@ async function run (){
 run()
 
 
-//getAllMeetMetaData(getDateMMDDYYYY())
 
 //what are the main processes we need to do for this
 
@@ -71,7 +76,6 @@ run()
 
 
 // const { addUrlToMeetCsv} = require('./meetMetadataCsv')
-// const {getAllMeetMetaData} = require('./meet_metadata_scraper/getAllMeetMetaData')
 // const {searchForNewMeets } = require('./searchForNewMeets')
 
 // async function getNewMeetArray (inputCsvPath, callback){
