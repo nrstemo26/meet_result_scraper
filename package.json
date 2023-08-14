@@ -4,9 +4,7 @@
   "description": "node scraper using puppeteer",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js",
-    "metadata": "nodemon meet_metadata_scraper/getAllMeetMetaData.js",
-    "compare-metadata": "nodemon main.js"
+    "get-new-meets": "nodemon main.js"
   },
   "author": "",
   "license": "ISC",
