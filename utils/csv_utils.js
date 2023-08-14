@@ -64,43 +64,20 @@ async function clearCsvFolder(directory){
         const files = await readdir(directory);
         const unlinkPromises = files.map(filename => unlink(`${directory}/${filename}`));
         await Promise.all(unlinkPromises);
-        // await unlink(directory)
+        //this doesn't work? no permission
+        //should delete the directory
+        //will investigate if the main function doesn't work if folder already exists
+        //await unlink(directory)
       } catch(err) {
         console.log(err);
       }
 }
 
-async function clearCsvs(resourcePaths){
-    try {
-        for (const path of resourcePaths) {
-            try {
-                const stats = await fs.promises.stat(path);
-                if (stats.isFile()) {
-                    await fs.promises.unlink(path);
-                    console.log(`File cleared: ${path}`);
-                } else if (stats.isDirectory()) {
-                    await rimraf(path);
-                    console.log(`Folder cleared: ${path}`);
-                }
-            } catch (error) {
-                if (error.code === 'ENOENT') {
-                    console.log(`Resource not found: ${path}`);
-                } else {
-                    console.error('Error clearing resources:', error);
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Error clearing resources:', error);
-    }
-}
 
 module.exports={
     createCSVfromArray,
     writeCSV,
     extractMeetUrls,
-    clearCsvs,
     clearCsvFolder,
     clearCsvFile,
-
 }
