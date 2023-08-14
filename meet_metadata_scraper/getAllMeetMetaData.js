@@ -47,7 +47,7 @@ async function getAllMeetMetaData(filePath, searchDate){
         await page.click('.data-table div.container.pb-0 div.s80-filter div.row.no-gutters .v-badge button.v-btn');      
     }
     
-    await clickFilter(page)
+    await clickFilter()
 
     //waits for the date picker to be available and then clicks it
     await page.waitForSelector('#date_range_start', {visible:true})
@@ -69,8 +69,8 @@ async function getAllMeetMetaData(filePath, searchDate){
     console.log('got to', month)
     
 
-    await clickDate(page)
-    await clickApply(page) 
+    await clickDate()
+    await clickApply() 
     
     //waits for the data to actually load before we get all of the meet data
     await page.waitForNetworkIdle()
