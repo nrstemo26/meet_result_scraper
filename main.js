@@ -1,6 +1,7 @@
+//just uncomment run and call this file from command line
+
 const fs = require('fs');
 const path = require('path');
-const csv = require('csv-parser');
 const { makeNewMeetMetaData} = require('./scrapers/meetMetadataCsv')
 const {scrapeOneMeet: getOneMeetCsv} = require('./scrapers/scrapeOneMeet')
 const { getWeeksAndYears } = require('./utils/date_utils')
