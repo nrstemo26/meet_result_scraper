@@ -1,10 +1,10 @@
 //may need some refactoring to move thru quickly
 const puppeteer = require('puppeteer')
-const { createCSVfromArray, writeCSV } = require('./utils/csv_utils');
-const {handleTotalAthleteString, getAmountMeetsOnPage} = require('./utils/string_utils')
-const {getAthletesOnPage} = require('./utils/scraping_utils')
+const { createCSVfromArray, writeCSV } = require('../utils/csv_utils');
+const {handleTotalAthleteString, getAmountMeetsOnPage} = require('../utils/string_utils')
+const {getAthletesOnPage} = require('../utils/scraping_utils')
 
-async function start(meetNumber, filePath){
+async function scrapeOneMeet(meetNumber, filePath){
     let baseUrl = 'https://usaweightlifting.sport80.com/public/rankings/results/'
     let url = baseUrl + meetNumber;
    
@@ -63,39 +63,7 @@ async function start(meetNumber, filePath){
 }
 
 
-async function getMultipleMeetResults(start, end){
-    let noMeet = [];
-    for(let i=start; i< end; i++){
-        console.log('getting results for meet ' + i);
-        let meetName = 'meet_' + i;
-        try{
-            await start(i, meetName);
-        }catch(e){
-            noMeet.push(i);
-            console.error(e);
-        }
-    }
-
-    console.log('no meets at ids \n' + noMeet);
-}
-
-async function multipleMissingMeets(missingArr){
-    let noMeet = [];
-
-    for(let meetUrl of missingArr){
-        console.log('getting results for meet ' + meetUrl);
-        let meetName = 'meet_' + meetUrl;
-        try{
-            await start(meetUrl, meetName);
-        }catch(e){
-            noMeet.push(meetUrl);
-            console.error(e);
-        }
-    }
-    console.log('no meets at ids \n' + noMeet);
-}
-
 
 module.exports = {
-    start:start
+    scrapeOneMeet:scrapeOneMeet
 }

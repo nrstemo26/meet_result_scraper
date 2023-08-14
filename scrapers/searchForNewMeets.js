@@ -2,16 +2,16 @@
 //this could be repurposed if its really slow to scrape with 
 //getting every url every
 
-const puppeteer = require('puppeteer')
-const {start: getOneMeetCSV} = require('./app')
-const { createCSVfromArray, writeCSV } = require('./utils/csv_utils');
-const {getDateMMDDYYYY} = require('./utils/date_utils');
-const { write } = require('fs');
-
-
 // I need some function to go thru all the other 
 // pages if necessary if the meet isnt found on the first page
 // currently scrapes page one. returns an array with meetName and url
+
+const puppeteer = require('puppeteer')
+const {scrapeOneMeet: getOneMeetCSV} = require('./scrapeOneMeet')
+const { createCSVfromArray, writeCSV } = require('../utils/csv_utils');
+const {getDateMMDDYYYY} = require('../utils/date_utils');
+const { write } = require('fs');
+
 
 async function getAllMeetMetaData(csvName, meetsArr){
     //we dont need a meet number

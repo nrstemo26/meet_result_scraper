@@ -3,8 +3,6 @@ const csv = require('csv-parser');
 const path = require('path');
 
 
-
-
 async function writeCSVHeaders(inputCsv, outputFileName){
     const headers = [];
     fs.createReadStream(inputCsv)
