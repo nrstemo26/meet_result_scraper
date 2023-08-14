@@ -4,7 +4,8 @@
   "description": "node scraper using puppeteer",
   "main": "app.js",
   "scripts": {
-    "get-new-meets": "nodemon main.js"
+    "get-new-meets": "nodemon main.js",
+    "scrape-dopers":  "nodemon ./doping_scraper/app.js"
   },
   "author": "",
   "license": "ISC",
