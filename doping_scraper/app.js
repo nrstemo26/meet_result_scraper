@@ -1,8 +1,6 @@
 //may need some refactoring to move thru quickly
 const puppeteer = require('puppeteer')
 const { createCSVfromArray, writeCSV } = require('../utils/csv_utils');
-const {handleTotalAthleteString, getAmountMeetsOnPage} = require('../utils/string_utils')
-const {getAthletesOnPage} = require('../utils/scraping_utils')
 
 async function scrapeDopers(){
     const url = 'https://ita.sport/sanction/international-weightlifting-federation-iwf/'
