@@ -40,34 +40,30 @@ async function scrapeOneMeet(meetUrl, filePath){
     // await page.click('#results_womens_snatch', {
         // waitUntil: 'networkidle0'
     // })
+
+    async function getWeightClasses(selector){
+        return await page.evaluate((selector)=>{
+            let elArr = Array.from(document.querySelectorAll(selector))
+            elArr = elArr.map((x)=>{
+                return  x.textContent
+            })
+            return elArr
+        },selector)
+    }
     
     //get weightclass
     let menSelector = '#men_snatchjerk div.results__title div.container div.row div.col-12 h3'
-    const mensWeightClasses = await page.evaluate((selector)=>{
-        let elArr = Array.from(document.querySelectorAll(selector))
-        elArr = elArr.map((x)=>{
-            return  x.textContent
-        })
-        return elArr
-    },menSelector)
-
+    let mensWeightClasses = await getWeightClasses(menSelector)
+   
     let womenSelector = '#women_snatchjerk div.results__title div.container div.row div.col-12 h3'
-    const womenWeightClasses = await page.evaluate((selector)=>{
-        let elArr = Array.from(document.querySelectorAll(selector))
-        elArr = elArr.map((x)=>{
-            return  x.textContent
-        })
-        return elArr
-    },womenSelector)
+    let womenWeightClasses = await getWeightClasses(womenSelector)
 
-
-    // let weightClassEls = await page.$$(selector)
-    // let weightClasses = await page.evaluate(el => el.textContent, weightClassEls)
     console.log(mensWeightClasses)
     console.log(womenWeightClasses)
 
     await page.screenshot({path: 'foo.png', fullPage: true})
 
+    console.log('done')
     await browser.close();
 }
 
