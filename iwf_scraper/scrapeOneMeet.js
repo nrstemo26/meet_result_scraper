@@ -41,6 +41,8 @@ async function scrapeOneMeet(meetUrl, filePath){
         // waitUntil: 'networkidle0'
     // })
 
+
+    //this gets the weight class name
     async function getWeightClasses(selector){
         return await page.evaluate((selector)=>{
             let elArr = Array.from(document.querySelectorAll(selector))
@@ -58,8 +60,18 @@ async function scrapeOneMeet(meetUrl, filePath){
     let womenSelector = '#women_snatchjerk div.results__title div.container div.row div.col-12 h3'
     let womenWeightClasses = await getWeightClasses(womenSelector)
 
-    console.log(mensWeightClasses)
-    console.log(womenWeightClasses)
+    //the selector situation is going to be tricky for this guy
+
+    //div.results__title ===weightclass title
+    //div.results__title === snatch
+    //div.cards == all sn results
+    //div.results__title === cj
+    //div.cards == all cj results
+    //div.results__title === total
+    //div.cards == all total results
+
+    //div.results_title == new weight class
+
 
     await page.screenshot({path: 'foo.png', fullPage: true})
 
