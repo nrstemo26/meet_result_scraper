@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "get-new-meets": "nodemon main.js",
-    "scrape-dopers":  "nodemon ./doping_scraper/app.js"
+    "scrape-dopers":  "nodemon ./doping_scraper/app.js",
+    "scrape-iwf": "nodemon ./iwf_scraper/scrapeOneMeet.js"
   },
   "author": "",
   "license": "ISC",
