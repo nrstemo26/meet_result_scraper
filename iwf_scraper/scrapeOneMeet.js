@@ -62,7 +62,7 @@ async function scrapeOneMeet(meetUrl, filePath){
     //get weightclass
     let menSelector = '#men_snatchjerk div.results__title div.container div.row div.col-12 h3'
     let mensWeightClasses = await getWeightClasses(menSelector)
-    console.log(mensWeightClasses)
+    // console.log(mensWeightClasses)
 
     let womenSelector = '#women_snatchjerk div.results__title div.container div.row div.col-12 h3'
     let womenWeightClasses = await getWeightClasses(womenSelector)
@@ -84,7 +84,7 @@ async function scrapeOneMeet(meetUrl, filePath){
     // let selector = 'div.results__title + div.results__title div.container div.row div.col-12 p + div.cards div.card div.container div.row div.col-md-5 div.row div.col-2 p'
     
     //this selector gets name rank nation
-    let selector = 'div.results__title + div.results__title + div.cards div.card div.container'
+    let snHeaderSelector = 'div.results__title + div.results__title + div.cards div.card.card__legend div.container'
     let snHeaders = await page.evaluate((selector)=>{
         let headers = Array.from(document.querySelectorAll(selector))
         headers = headers.map((x)=>{
@@ -110,10 +110,45 @@ async function scrapeOneMeet(meetUrl, filePath){
         //needs to remove [0]
         return cleanedHeaders[0]
         // return headerArr[0]
-    }, selector)
+    }, snHeaderSelector)
 
+    // should return
+    // [  'Sn Rank',  'Name', 'Nation',   'Born', 'B.weight', 'Group','Sn 1', 'Sn 2', 'Sn 3', 'Best Sn' ]
     console.log(snHeaders)
 
+
+    let snSelector = 'div.results__title + div.results__title + div.cards div.card div.container'
+    let snatches = await page.evaluate((selector)=>{
+        let snatches = Array.from(document.querySelectorAll(selector))
+        snatches = snatches.map((x)=>{
+            return  x.textContent.trim()
+        })
+
+        let cleanedSnatches = snatches.map(x=> {
+            const cleanedData = x.replace(/\n/g, '&');
+            const splitData = cleanedData.split(/[:&]/).map(item => item.trim());
+            return splitData.filter(item => item !== ''); 
+
+        }); 
+        let headersRemoved = cleanedSnatches.map(x=>{
+            x[0] = '';
+            x[4] = '';
+            x[6] = '';
+            x[8] = '';
+            x[10] = '';
+            x[12] = '';
+            x[14] = '';
+            x[16] = '';
+            return x.filter(item => item !== '')
+        })
+        
+        return headersRemoved[1]
+        return cleanedSnatches[1];
+        //needs to remove [0]
+        return snatches[1]
+    }, snSelector)
+
+    console.log(snatches)
     //the selector situation is going to be tricky for this guy
 
     //div.results__title === weightclass title
