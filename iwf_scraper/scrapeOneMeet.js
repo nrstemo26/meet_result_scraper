@@ -117,7 +117,7 @@ async function scrapeOneMeet(meetUrl, filePath){
     console.log(snHeaders)
 
 
-    let snSelector = 'div.results__title + div.results__title + div.cards div.card div.container'
+    let snSelector = 'div.result__container.active div.results__title:nth-of-type(1) + div.results__title + div.cards div.card div.container'
     let snatches = await page.evaluate((selector)=>{
         let snatches = Array.from(document.querySelectorAll(selector))
         snatches = snatches.map((x)=>{
@@ -142,7 +142,7 @@ async function scrapeOneMeet(meetUrl, filePath){
             return x.filter(item => item !== '')
         })
         
-        return headersRemoved[1]
+        return headersRemoved
         return cleanedSnatches[1];
         //needs to remove [0]
         return snatches[1]
