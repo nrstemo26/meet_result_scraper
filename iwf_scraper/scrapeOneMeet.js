@@ -113,22 +113,24 @@ async function scrapeOneMeet(meetUrl, filePath){
     }, snHeaderSelector)
 
     // should return
-    // [  'Sn Rank',  'Name', 'Nation',   'Born', 'B.weight', 'Group','Sn 1', 'Sn 2', 'Sn 3', 'Best Sn' ]
+    //                                     change to BW
+    // [  'Sn Rank', 'Name', 'Nation','Born', 'B.weight', 'Group','Sn 1', 'Sn 2', 'Sn 3', 'Best Sn' ]
     console.log(snHeaders)
 
 
     let snSelector = 'div.result__container.active div.results__title:nth-of-type(1) + div.results__title + div.cards div.card div.container'
+    //needs to get the strike
     let snatches = await page.evaluate((selector)=>{
         let snatches = Array.from(document.querySelectorAll(selector))
         snatches = snatches.map((x)=>{
             return  x.textContent.trim()
         })
-
+        
         let cleanedSnatches = snatches.map(x=> {
             const cleanedData = x.replace(/\n/g, '&');
             const splitData = cleanedData.split(/[:&]/).map(item => item.trim());
             return splitData.filter(item => item !== ''); 
-
+            
         }); 
         let headersRemoved = cleanedSnatches.map(x=>{
             x[0] = '';
@@ -147,8 +149,52 @@ async function scrapeOneMeet(meetUrl, filePath){
         //needs to remove [0]
         return snatches[1]
     }, snSelector)
+    
 
-    console.log(snatches)
+    
+
+    // [ '\n1: 92\n', '\n2: 94\n', '\n3:  96\n', '\nTotal: 94\n' ]
+    // i need to get an array that is idential and has just the striked out ones
+    // ['', miss ,'','','']
+
+    // console.log(snatches)
+    let snMakesSelector = 'div.result__container.active div.results__title:nth-of-type(1) + div.results__title + div.cards div.card:nth-of-type(2) div.container div.col-md-3 div.row.no-gutters p'
+    // let snMakesSelector = 'div.result__container.active div.results__title:nth-of-type(1) + div.results__title + div.cards div.card:nth-of-type(2) div.container div.col-md-3 div.row.no-gutters strike'
+    let snatchesMakeMiss = await page.evaluate((selector)=>{
+        let snatches = Array.from(document.querySelectorAll(selector))
+        
+        //this is getting the inner html of if there is a strike or not!!!
+        snMakes = snatches.map(div => div.childNodes[2].innerHTML);
+        // return snMakes
+        snatches = snatches.map((x)=>{
+            return  x.textContent.trim()
+        })
+        // return snatch 1 2 3 total
+        let cleanedSnatches = snatches.map(x=> x.split(/[:]/).map((x)=> x.trim())).map((x)=>x[1]);
+        snMakes.map((element, index)=>{
+            if(element && element.includes('<strike>')){
+               cleanedSnatches[index] = 'x'+ cleanedSnatches[index]
+            }
+            return element
+        })
+
+        return cleanedSnatches
+        
+        let headersRemoved = cleanedSnatches.map(x=>{
+            x[0] = '';
+            x[2] = '';
+            x[4] = '';
+            x[6] = '';
+            return x.filter(item => item !== '')
+        })
+        
+        return headersRemoved[1]
+        // return cleanedSnatches[1];
+        //needs to remove [0]
+        return snatches[1]
+    }, snMakesSelector)
+
+    console.log(snatchesMakeMiss)
     //the selector situation is going to be tricky for this guy
 
     //div.results__title === weightclass title
