@@ -85,26 +85,34 @@ async function scrapeOneMeet(meetUrl, filePath){
     
     //this selector gets name rank nation
     let selector = 'div.results__title + div.results__title + div.cards div.card div.container'
-    let snResults = await page.evaluate((selector)=>{
-        console.log('getting sn results')
-        let elArr = Array.from(document.querySelectorAll(selector))
-        elArr = elArr.map((x)=>{
+    let snHeaders = await page.evaluate((selector)=>{
+        let headers = Array.from(document.querySelectorAll(selector))
+        headers = headers.map((x)=>{
             return  x.textContent.trim()
         })
 
-        const resultArray = elArr.map(x=> {
+        let cleanedHeaders = headers.map(x=> {
             const cleanedData = x.replace(/\n/g, '');
             const splitData = cleanedData.split(':').map(item => item.trim());
             return splitData.filter(item => item !== ''); 
         }); 
+        cleanedHeaders = cleanedHeaders.map(x=>{
+            x[0] = 'Sn ' + x[0]
+            x[6] = 'Sn ' + x[6]
+            x[7] = 'Sn ' + x[7]
+            x[8] = 'Sn ' + x[8]
+            x[9] = 'Best Sn'
+            return x
+
+        })
         
         
-        console.log(resultArray);
         //needs to remove [0]
-        return resultArray[0]
+        return cleanedHeaders[0]
+        // return headerArr[0]
     }, selector)
 
-    console.log(snResults)
+    console.log(snHeaders)
 
     //the selector situation is going to be tricky for this guy
 
