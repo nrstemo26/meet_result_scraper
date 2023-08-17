@@ -1,8 +1,10 @@
 //may need some refactoring to move thru quickly
 const puppeteer = require('puppeteer')
-const { createCSVfromArray, writeCSV } = require('../utils/csv_utils');
-const {handleTotalAthleteString, getAmountMeetsOnPage} = require('../utils/string_utils')
-const {getAthletesOnPage} = require('../utils/scraping_utils')
+// const { createCSVfromArray, writeCSV } = require('../utils/csv_utils');
+// const {handleTotalAthleteString, getAmountMeetsOnPage} = require('../utils/string_utils')
+// const {getAthletesOnPage} = require('../utils/scraping_utils')
+const {writeCsv} = require('./csv_utils')
+
 
 //TODOS
 //get guys and girls results
@@ -309,6 +311,8 @@ async function scrapeOneMeet(meetUrl, filePath){
     }
     let combinedObj = combineObjArrs(combineCjs,combinedSn,totalRanks)
     console.log(combinedObj)
+    writeCsv(combinedObj)
+    writeCsv(combinedObj)
     //combine sn obj with, cjs obj and total obj
 
     //the selector situation is going to be tricky for this guy
