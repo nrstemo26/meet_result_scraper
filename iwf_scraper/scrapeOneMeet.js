@@ -142,17 +142,24 @@ async function scrapeOneMeet(meetUrl, filePath){
             x[14] = '';
             x[16] = '';
             return x.filter(item => item !== '').slice(0,-4)
+        }).map((el)=>{
+            return {
+                "sn rank": el[0],
+                'name': el[1],
+                'country': el[2],
+                'birthday': el[3],
+                'bw': el[4],
+                'session': el[5],
+            }
+
         })
-        
         return headersRemoved
-        return cleanedSnatches[1];
-        //needs to remove [0]
-        return snatches[1]
     }, snSelector)
     console.log(snatches)
-
     
-    async function getMakeMisses (classIndex,snatch=true){
+    //gets all the snatches with make or miss indications(- before number is a miss)
+    async function getMakeMisses (classIndex, snatch=true){
+        //first nth of type is weight class 2nd nth of type is 
         let missSelector;
         if(snatch){
             missSelector = 'div.result__container.active div.results__title:nth-of-type('+ classIndex +') + div.results__title + div.cards div.card div.container div.col-md-3 div.row.no-gutters p'
@@ -193,42 +200,46 @@ async function scrapeOneMeet(meetUrl, filePath){
     let snMakes = await getMakeMisses(1)
     // console.log(snMakes)
 
-    //gets all the snatches with make or miss indications(- before number is a miss)
-    //first nth of type is weight class 2nd nth of type is 
-    // let snMakesSelector = 'div.result__container.active div.results__title:nth-of-type(1) + div.results__title + div.cards div.card div.container div.col-md-3 div.row.no-gutters p'
-    // let snatchesMakeMiss = await page.evaluate((selector)=>{
-    //     let snatches = Array.from(document.querySelectorAll(selector))
-    //     //this is getting the inner html of if there is a strike or not!!!
-    //     snMakes = snatches.map(div => {
-    //         if(div.childNodes[2]){
-    //             return div.childNodes[2].innerHTML
-    //         }
-    //         return ''
-    //     });
-    //     snatches = snatches.map((x)=>{
-    //         return  x.textContent.trim()
-    //     })
     
-    //     // return snatch [1, 2, 3, total]
-    //     let cleanedSnatches = snatches.map(x=> x.split(/[:]/).map((x)=> x.trim())).map((x)=>x[1]);
-    //     snMakes.map((element, index)=>{
-    //         if(element && element.includes('<strike>')){
-    //            cleanedSnatches[index] = '-'+ cleanedSnatches[index]
-    //         }
-    //         return element
-    //     })
-
-    //     const cleanedArr = [];
-    //     for (let i = 4; i < cleanedSnatches.length; i += 4) {
-    //         cleanedArr.push(cleanedSnatches.slice(i, i + 4));
-    //     }
-
-    //     return cleanedArr    
-    //     return headersRemoved[1]
-    // }, snMakesSelector)
 
     let cjMakes = await getMakeMisses(1,false)
     console.log(cjMakes)
+
+
+    //need something to grab just the name and place for cjs
+    //name and place for total too
+    async function getNameAndPlace(classIndex, isCj=true){
+        let selector;
+        let cjSelector = 'div.result__container.active div.results__title:nth-of-type('+ classIndex +') + div.results__title + div.cards + div.results__title + div.cards div.card div.container div.row.no-gutters a.col-md-5 div.row.no-gutters';
+        let totalSelector = 'div.result__container.active div.results__title:nth-of-type('+ classIndex +') + div.results__title + div.cards + div.results__title + div.cards + div.results__title + div.cards div.card div.container div.row.no-gutters a.col-md-5 div.row.no-gutters';
+        if(isCj){
+            selector = cjSelector;
+        }else{
+            selector = totalSelector
+        }
+        
+        return await page.evaluate((selector)=>{
+            let ranks = Array.from(document.querySelectorAll(selector))
+            ranks = ranks.map( x => x.textContent.trim() )
+            
+            cleanedRanks = ranks.map((x)=>{
+                const cleanedData = x.replace(/\n/g, '&');
+                const splitData = cleanedData.split(/[:&]/).map(item => item.trim());
+                return splitData.filter(item => item !== ''); 
+                // return  x.textContent.trim()
+            }).map(el=>{
+                return el.splice(1,2)
+            })
+            
+        
+            return cleanedRanks
+        }, selector)
+    }
+
+    let cjRanks = await getNameAndPlace(1);
+    console.log(cjRanks)
+    let totalRanks = await getNameAndPlace(1,false);
+    console.log(totalRanks)
 
 
     //the selector situation is going to be tricky for this guy
