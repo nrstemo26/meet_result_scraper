@@ -153,9 +153,10 @@ async function scrapeOneMeet(meetUrl, filePath){
             }
 
         })
-        return headersRemoved
+        //headers need to be removed
+        return headersRemoved.slice(1)
     }, snSelector)
-    console.log(snatches)
+    // console.log(snatches)
     
     //gets all the snatches with make or miss indications(- before number is a miss)
     async function getMakeMisses (classIndex, snatch=true){
@@ -215,7 +216,16 @@ async function scrapeOneMeet(meetUrl, filePath){
         }, missSelector, snatch)
     }
     let snMakes = await getMakeMisses(1)
-    // console.log(snMakes)
+
+    function combineArrofObjs(arr1,arr2){
+        let combinedArr = []
+        for(let i = 0; i < arr1.length; i++){
+            combinedArr[i] = { ...arr1[i], ...arr2[i] }
+        }
+        return combinedArr;
+    }
+    let combinedSn = combineArrofObjs(snatches,snMakes)
+    console.log(combinedSn)
 
     
 
@@ -264,10 +274,43 @@ async function scrapeOneMeet(meetUrl, filePath){
     }
 
     let cjRanks = await getNameAndPlace(1);
-    console.log(cjRanks)
-    let totalRanks = await getNameAndPlace(1,false);
-    console.log(totalRanks)
+    // console.log(cjRanks)
 
+    let combineCjs = combineArrofObjs(cjRanks,cjMakes)
+    console.log(combineCjs)
+    let totalRanks = await getNameAndPlace(1,false);
+    console.log('totals', totalRanks)
+
+    function combineObjArrs(arr1,arr2,arr3){       
+          const combinedArray = [];
+          
+          arr1.forEach(obj => {
+            const matchingObj = arr2.find(item => item.name === obj.name) || {};
+            combinedArray.push({ ...obj, ...matchingObj });
+          
+            const matchingObj3 = arr3.find(item => item.name === obj.name) || {};
+            combinedArray[combinedArray.length - 1] = { ...combinedArray[combinedArray.length - 1], ...matchingObj3 };
+          });
+          
+          arr2.forEach(obj => {
+            if (!combinedArray.some(item => item.name === obj.name)) {
+              const matchingObj = arr3.find(item => item.name === obj.name) || {};
+              combinedArray.push({ ...obj, ...matchingObj });
+            }
+          });
+          
+          arr3.forEach(obj => {
+            if (!combinedArray.some(item => item.name === obj.name)) {
+              combinedArray.push(obj);
+            }
+          });
+          
+          console.log(combinedArray);
+          return combinedArray;
+    }
+    let combinedObj = combineObjArrs(combineCjs,combinedSn,totalRanks)
+    console.log(combinedObj)
+    //combine sn obj with, cjs obj and total obj
 
     //the selector situation is going to be tricky for this guy
 
