@@ -166,7 +166,7 @@ async function scrapeOneMeet(meetUrl, filePath){
         }else{
             missSelector = 'div.result__container.active div.results__title:nth-of-type('+ classIndex +') + div.results__title + div.cards + div.results__title + div.cards div.card div.container div.col-md-3 div.row.no-gutters p'
         }
-        return await page.evaluate((selector)=>{
+        return await page.evaluate((selector, snatch)=>{
             let snatches = Array.from(document.querySelectorAll(selector))
             //this is getting the inner html of if there is a strike or not!!!
             snMakes = snatches.map(div => {
@@ -188,14 +188,31 @@ async function scrapeOneMeet(meetUrl, filePath){
                 return element
             })
     
-            const cleanedArr = [];
+            let cleanedArr = [];
             for (let i = 4; i < cleanedSnatches.length; i += 4) {
                 cleanedArr.push(cleanedSnatches.slice(i, i + 4));
             }
     
+            cleanedArr = cleanedArr.map(el=>{
+                if(snatch){
+                    return {
+                    'Sn 1': el[0],
+                    'Sn 2': el[1],
+                    'Sn 3': el[2],
+                    'Best Sn': el[3],
+                    }
+                }else{
+                    return {
+                        'Cj 1': el[0],
+                        'Cj 2': el[1],
+                        'Cj 3': el[2],
+                        'Best Cj': el[3],
+                    }
+                }
+            })
             return cleanedArr    
             return headersRemoved[1]
-        }, missSelector)
+        }, missSelector, snatch)
     }
     let snMakes = await getMakeMisses(1)
     // console.log(snMakes)
@@ -218,22 +235,32 @@ async function scrapeOneMeet(meetUrl, filePath){
             selector = totalSelector
         }
         
-        return await page.evaluate((selector)=>{
+        return await page.evaluate((selector,isCj)=>{
             let ranks = Array.from(document.querySelectorAll(selector))
             ranks = ranks.map( x => x.textContent.trim() )
             
-            cleanedRanks = ranks.map((x)=>{
+            let cleanedRanks = ranks.map((x)=>{
                 const cleanedData = x.replace(/\n/g, '&');
                 const splitData = cleanedData.split(/[:&]/).map(item => item.trim());
                 return splitData.filter(item => item !== ''); 
-                // return  x.textContent.trim()
             }).map(el=>{
-                return el.splice(1,2)
+                if(isCj){
+                    return {
+                        "Cj rank": el[1],
+                        "name": el[2]
+                    }
+                }else{
+                    return{
+                        "total rank": el[1],
+                        "name": el[2]
+                    }
+                }
             })
+            
             
         
             return cleanedRanks
-        }, selector)
+        }, selector,isCj)
     }
 
     let cjRanks = await getNameAndPlace(1);
