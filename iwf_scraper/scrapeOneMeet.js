@@ -152,51 +152,83 @@ async function scrapeOneMeet(meetUrl, filePath){
     console.log(snatches)
 
     
+    async function getMakeMisses (classIndex,snatch=true){
+        let missSelector;
+        if(snatch){
+            missSelector = 'div.result__container.active div.results__title:nth-of-type('+ classIndex +') + div.results__title + div.cards div.card div.container div.col-md-3 div.row.no-gutters p'
+        }else{
+            missSelector = 'div.result__container.active div.results__title:nth-of-type('+ classIndex +') + div.results__title + div.cards + div.results__title + div.cards div.card div.container div.col-md-3 div.row.no-gutters p'
+        }
+        return await page.evaluate((selector)=>{
+            let snatches = Array.from(document.querySelectorAll(selector))
+            //this is getting the inner html of if there is a strike or not!!!
+            snMakes = snatches.map(div => {
+                if(div.childNodes[2]){
+                    return div.childNodes[2].innerHTML
+                }
+                return ''
+            });
+            snatches = snatches.map((x)=>{
+                return  x.textContent.trim()
+            })
+        
+            // return snatch [1, 2, 3, total]
+            let cleanedSnatches = snatches.map(x=> x.split(/[:]/).map((x)=> x.trim())).map((x)=>x[1]);
+            snMakes.map((element, index)=>{
+                if(element && element.includes('<strike>')){
+                   cleanedSnatches[index] = '-'+ cleanedSnatches[index]
+                }
+                return element
+            })
+    
+            const cleanedArr = [];
+            for (let i = 4; i < cleanedSnatches.length; i += 4) {
+                cleanedArr.push(cleanedSnatches.slice(i, i + 4));
+            }
+    
+            return cleanedArr    
+            return headersRemoved[1]
+        }, missSelector)
+    }
+    let snMakes = await getMakeMisses(1)
+    // console.log(snMakes)
 
     //gets all the snatches with make or miss indications(- before number is a miss)
     //first nth of type is weight class 2nd nth of type is 
-    let snMakesSelector = 'div.result__container.active div.results__title:nth-of-type(1) + div.results__title + div.cards div.card div.container div.col-md-3 div.row.no-gutters p'
-    let snatchesMakeMiss = await page.evaluate((selector)=>{
-        let snatches = Array.from(document.querySelectorAll(selector))
-        
-        // return snatches
-        //this is getting the inner html of if there is a strike or not!!!
-        snMakes = snatches.map(div => {
-            if(div.childNodes[2]){
-                return div.childNodes[2].innerHTML
-            }
-            return ''
-        });
-        // return snMakes
-        snatches = snatches.map((x)=>{
-            return  x.textContent.trim()
-        })
+    // let snMakesSelector = 'div.result__container.active div.results__title:nth-of-type(1) + div.results__title + div.cards div.card div.container div.col-md-3 div.row.no-gutters p'
+    // let snatchesMakeMiss = await page.evaluate((selector)=>{
+    //     let snatches = Array.from(document.querySelectorAll(selector))
+    //     //this is getting the inner html of if there is a strike or not!!!
+    //     snMakes = snatches.map(div => {
+    //         if(div.childNodes[2]){
+    //             return div.childNodes[2].innerHTML
+    //         }
+    //         return ''
+    //     });
+    //     snatches = snatches.map((x)=>{
+    //         return  x.textContent.trim()
+    //     })
     
-        // return snatch [1, 2, 3, total]
-        let cleanedSnatches = snatches.map(x=> x.split(/[:]/).map((x)=> x.trim())).map((x)=>x[1]);
-        snMakes.map((element, index)=>{
-            if(element && element.includes('<strike>')){
-               cleanedSnatches[index] = '-'+ cleanedSnatches[index]
-            }
-            return element
-        })
+    //     // return snatch [1, 2, 3, total]
+    //     let cleanedSnatches = snatches.map(x=> x.split(/[:]/).map((x)=> x.trim())).map((x)=>x[1]);
+    //     snMakes.map((element, index)=>{
+    //         if(element && element.includes('<strike>')){
+    //            cleanedSnatches[index] = '-'+ cleanedSnatches[index]
+    //         }
+    //         return element
+    //     })
 
-        const cleanedArr = [];
-        for (let i = 4; i < cleanedSnatches.length; i += 4) {
-            cleanedArr.push(cleanedSnatches.slice(i, i + 4));
-        }
+    //     const cleanedArr = [];
+    //     for (let i = 4; i < cleanedSnatches.length; i += 4) {
+    //         cleanedArr.push(cleanedSnatches.slice(i, i + 4));
+    //     }
 
-        return cleanedArr
-        
-      
-        
-        return headersRemoved[1]
-        // return cleanedSnatches[1];
-        //needs to remove [0]
-        return snatches[1]
-    }, snMakesSelector)
+    //     return cleanedArr    
+    //     return headersRemoved[1]
+    // }, snMakesSelector)
 
-    console.log(snatchesMakeMiss)
+    let cjMakes = await getMakeMisses(1,false)
+    console.log(cjMakes)
 
 
     //the selector situation is going to be tricky for this guy
