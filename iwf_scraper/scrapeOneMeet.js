@@ -21,8 +21,12 @@ const {getAthletesOnPage} = require('../utils/scraping_utils')
 //find total -> scrape table
 //remove overlapping data
 
-
-
+//todos
+//i get an object of athlete results for one weightclass
+//i need to write that to csv before going to the next loop
+//then hook up to loop thru each weight class
+//then click female button then do the same thing again
+//no total in there yet either
 async function scrapeOneMeet(meetUrl, filePath){
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -53,11 +57,6 @@ async function scrapeOneMeet(meetUrl, filePath){
         },selector)
     }
 
-    //lets just get the first set of results
-    //the snatches then see if we can extrapolate that to get the cjs and then the totals
-    //probaby going to need some nth of type situations
-    //maybe we need a loop that's total weight classes on page
-    // that creates one nth of type and then there may be some more of them?
     
     //get weightclass
     let menSelector = '#men_snatchjerk div.results__title div.container div.row div.col-12 h3'
@@ -67,8 +66,8 @@ async function scrapeOneMeet(meetUrl, filePath){
     let womenSelector = '#women_snatchjerk div.results__title div.container div.row div.col-12 h3'
     let womenWeightClasses = await getWeightClasses(womenSelector)
 
-    
     for(let i=0; i<mensWeightClasses.length; i++ ){
+        //needs to get added to one of the evaluates to add the weight class in for the athletes
         let weightClass = mensWeightClasses[i]
         let nthOfType = i+1;
         // console.log(i)
@@ -97,11 +96,11 @@ async function scrapeOneMeet(meetUrl, filePath){
             return splitData.filter(item => item !== ''); 
         }); 
         cleanedHeaders = cleanedHeaders.map(x=>{
-            x[0] = 'Sn ' + x[0]
-            x[6] = 'Sn ' + x[6]
-            x[7] = 'Sn ' + x[7]
-            x[8] = 'Sn ' + x[8]
-            x[9] = 'Best Sn'
+            x[0] = 'sn ' + x[0]
+            x[6] = 'sn ' + x[6]
+            x[7] = 'sn ' + x[7]
+            x[8] = 'sn ' + x[8]
+            x[9] = 'best sn'
             return x
 
         })
@@ -197,17 +196,17 @@ async function scrapeOneMeet(meetUrl, filePath){
             cleanedArr = cleanedArr.map(el=>{
                 if(snatch){
                     return {
-                    'Sn 1': el[0],
-                    'Sn 2': el[1],
-                    'Sn 3': el[2],
-                    'Best Sn': el[3],
+                    'sn 1': el[0],
+                    'sn 2': el[1],
+                    'sn 3': el[2],
+                    'best sn': el[3],
                     }
                 }else{
                     return {
-                        'Cj 1': el[0],
-                        'Cj 2': el[1],
-                        'Cj 3': el[2],
-                        'Best Cj': el[3],
+                        'cj 1': el[0],
+                        'cj 2': el[1],
+                        'cj 3': el[2],
+                        'best cj': el[3],
                     }
                 }
             })
@@ -256,7 +255,7 @@ async function scrapeOneMeet(meetUrl, filePath){
             }).map(el=>{
                 if(isCj){
                     return {
-                        "Cj rank": el[1],
+                        "cj rank": el[1],
                         "name": el[2]
                     }
                 }else{
