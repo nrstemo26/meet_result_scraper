@@ -3,7 +3,8 @@ const puppeteer = require('puppeteer')
 // const { createCSVfromArray, writeCSV } = require('../utils/csv_utils');
 // const {handleTotalAthleteString, getAmountMeetsOnPage} = require('../utils/string_utils')
 // const {getAthletesOnPage} = require('../utils/scraping_utils')
-const {writeCsv} = require('./csv_utils')
+const {writeCsv} = require('./csv_utils');
+const { writeCSV } = require('../utils/csv_utils');
 
 
 //TODOS
@@ -50,6 +51,7 @@ async function scrapeOneMeet(meetUrl, filePath){
 
     //this gets the weight class name
     async function getWeightClasses(selector){
+
         return await page.evaluate((selector)=>{
             let elArr = Array.from(document.querySelectorAll(selector))
             elArr = elArr.map((x)=>{
@@ -59,69 +61,10 @@ async function scrapeOneMeet(meetUrl, filePath){
         },selector)
     }
 
-    
-    //get weightclass
-    let menSelector = '#men_snatchjerk div.results__title div.container div.row div.col-12 h3'
-    let mensWeightClasses = await getWeightClasses(menSelector)
-    // console.log(mensWeightClasses)
-
-    let womenSelector = '#women_snatchjerk div.results__title div.container div.row div.col-12 h3'
-    let womenWeightClasses = await getWeightClasses(womenSelector)
-
-    for(let i=0; i<mensWeightClasses.length; i++ ){
-        //needs to get added to one of the evaluates to add the weight class in for the athletes
-        let weightClass = mensWeightClasses[i]
-        let nthOfType = i+1;
-        // console.log(i)
-
-    }
-    // this gets the rank column
-    // let selector = 'div.results__title + div.results__title + div.cards div.card div.container div.row div.col-md-5 div.row div.col-2 p'
-
-    //get the table headers
-    //we don't need to scrape the total except for the total placing?
-
-    //this gets all the snatches
-    // let selector = 'div.results__title + div.results__title div.container div.row div.col-12 p + div.cards div.card div.container div.row div.col-md-5 div.row div.col-2 p'
-    
-    //this selector gets name rank nation
-    let snHeaderSelector = 'div.results__title + div.results__title + div.cards div.card.card__legend div.container'
-    let snHeaders = await page.evaluate((selector)=>{
-        let headers = Array.from(document.querySelectorAll(selector))
-        headers = headers.map((x)=>{
-            return  x.textContent.trim()
-        })
-
-        let cleanedHeaders = headers.map(x=> {
-            const cleanedData = x.replace(/\n/g, '');
-            const splitData = cleanedData.split(':').map(item => item.trim());
-            return splitData.filter(item => item !== ''); 
-        }); 
-        cleanedHeaders = cleanedHeaders.map(x=>{
-            x[0] = 'sn ' + x[0]
-            x[6] = 'sn ' + x[6]
-            x[7] = 'sn ' + x[7]
-            x[8] = 'sn ' + x[8]
-            x[9] = 'best sn'
-            return x
-
-        })
-        
-        
-        //needs to remove [0]
-        return cleanedHeaders[0]
-        // return headerArr[0]
-    }, snHeaderSelector)
-
-    // should return
-    //                                     change to BW
-    // [  'Sn Rank', 'Name', 'Nation','Born', 'B.weight', 'Group','Sn 1', 'Sn 2', 'Sn 3', 'Best Sn' ]
-    console.log(snHeaders)
-
-
-    let snSelector = 'div.result__container.active div.results__title:nth-of-type(1) + div.results__title + div.cards div.card div.container'
-    //needs to get the strike
-    let snatches = await page.evaluate((selector)=>{
+    async function getSnResults(classIndex){   
+        let snSelector = 'div.result__container.active div.results__title:nth-of-type(' + classIndex + ') + div.results__title + div.cards div.card div.container'
+        //needs to get the strike
+        return await page.evaluate((selector)=>{
         let snatches = Array.from(document.querySelectorAll(selector))
         snatches = snatches.map((x)=>{
             return  x.textContent.trim()
@@ -152,13 +95,13 @@ async function scrapeOneMeet(meetUrl, filePath){
                 'bw': el[4],
                 'session': el[5],
             }
-
+            
         })
         //headers need to be removed
         return headersRemoved.slice(1)
     }, snSelector)
-    // console.log(snatches)
-    
+    }
+
     //gets all the snatches with make or miss indications(- before number is a miss)
     async function getMakeMisses (classIndex, snatch=true){
         //first nth of type is weight class 2nd nth of type is 
@@ -185,16 +128,16 @@ async function scrapeOneMeet(meetUrl, filePath){
             let cleanedSnatches = snatches.map(x=> x.split(/[:]/).map((x)=> x.trim())).map((x)=>x[1]);
             snMakes.map((element, index)=>{
                 if(element && element.includes('<strike>')){
-                   cleanedSnatches[index] = '-'+ cleanedSnatches[index]
+                cleanedSnatches[index] = '-'+ cleanedSnatches[index]
                 }
                 return element
             })
-    
+
             let cleanedArr = [];
             for (let i = 4; i < cleanedSnatches.length; i += 4) {
                 cleanedArr.push(cleanedSnatches.slice(i, i + 4));
             }
-    
+
             cleanedArr = cleanedArr.map(el=>{
                 if(snatch){
                     return {
@@ -216,25 +159,16 @@ async function scrapeOneMeet(meetUrl, filePath){
             return headersRemoved[1]
         }, missSelector, snatch)
     }
-    let snMakes = await getMakeMisses(1)
 
-    function combineArrofObjs(arr1,arr2){
+    function combineAttemptsAndRankObjs(arr1,arr2){
         let combinedArr = []
         for(let i = 0; i < arr1.length; i++){
             combinedArr[i] = { ...arr1[i], ...arr2[i] }
         }
         return combinedArr;
     }
-    let combinedSn = combineArrofObjs(snatches,snMakes)
-    console.log(combinedSn)
 
-    
-
-    let cjMakes = await getMakeMisses(1,false)
-    console.log(cjMakes)
-
-
-    //need something to grab just the name and place for cjs
+    //can grab cj and total placing with name
     //name and place for total too
     async function getNameAndPlace(classIndex, isCj=true){
         let selector;
@@ -273,62 +207,121 @@ async function scrapeOneMeet(meetUrl, filePath){
             return cleanedRanks
         }, selector,isCj)
     }
-
-    let cjRanks = await getNameAndPlace(1);
-    // console.log(cjRanks)
-
-    let combineCjs = combineArrofObjs(cjRanks,cjMakes)
-    console.log(combineCjs)
-    let totalRanks = await getNameAndPlace(1,false);
-    console.log('totals', totalRanks)
-
-    function combineObjArrs(arr1,arr2,arr3){       
-          const combinedArray = [];
-          
-          arr1.forEach(obj => {
-            const matchingObj = arr2.find(item => item.name === obj.name) || {};
-            combinedArray.push({ ...obj, ...matchingObj });
-          
-            const matchingObj3 = arr3.find(item => item.name === obj.name) || {};
-            combinedArray[combinedArray.length - 1] = { ...combinedArray[combinedArray.length - 1], ...matchingObj3 };
-          });
-          
-          arr2.forEach(obj => {
-            if (!combinedArray.some(item => item.name === obj.name)) {
-              const matchingObj = arr3.find(item => item.name === obj.name) || {};
-              combinedArray.push({ ...obj, ...matchingObj });
-            }
-          });
-          
-          arr3.forEach(obj => {
-            if (!combinedArray.some(item => item.name === obj.name)) {
-              combinedArray.push(obj);
-            }
-          });
-          
-          console.log(combinedArray);
-          return combinedArray;
+    function addWeightClassToObjArr(className, arr){
+        return arr.map((el)=>{
+            return {...el, 'weight class': className}
+        })
     }
-    let combinedObj = combineObjArrs(combineCjs,combinedSn,totalRanks)
-    console.log(combinedObj)
-    writeCsv(combinedObj)
-    writeCsv(combinedObj)
-    //combine sn obj with, cjs obj and total obj
 
-    //the selector situation is going to be tricky for this guy
+    function combineObjsByName(arr1,arr2,arr3){       
+        const combinedArray = [];
+        
+        arr1.forEach(obj => {
+          const matchingObj = arr2.find(item => item.name === obj.name) || {};
+          combinedArray.push({ ...obj, ...matchingObj });
+        
+          const matchingObj3 = arr3.find(item => item.name === obj.name) || {};
+          combinedArray[combinedArray.length - 1] = { ...combinedArray[combinedArray.length - 1], ...matchingObj3 };
+        });
+        
+        arr2.forEach(obj => {
+          if (!combinedArray.some(item => item.name === obj.name)) {
+            const matchingObj = arr3.find(item => item.name === obj.name) || {};
+            combinedArray.push({ ...obj, ...matchingObj });
+          }
+        });
+        
+        arr3.forEach(obj => {
+          if (!combinedArray.some(item => item.name === obj.name)) {
+            combinedArray.push(obj);
+          }
+        });
+        return combinedArray;
+  }
+    
+    //get weightclass
+    let menSelector = '#men_snatchjerk div.results__title div.container div.row div.col-12 h3'
+    let mensWeightClasses = await getWeightClasses(menSelector)
+    // console.log(mensWeightClasses)
 
-    //div.results__title === weightclass title
-    //div.results__title === snatch
-    //div.cards === all sn results
-    //div.results__title === cj
-    //div.cards === all cj results
-    //div.results__title === total
-    //div.cards === all total results
+    let womenSelector = '#women_snatchjerk div.results__title div.container div.row div.col-12 h3'
+    let womenWeightClasses = await getWeightClasses(womenSelector)
+    
+    let meetData = []
+    for(let i=0; i <mensWeightClasses.length; i++ ){
+        //needs to get added to one of the evaluates to add the weight class in for the athletes
+        // let weightClass = mensWeightClasses[i]
+        // console.log(weightClass)
+        // let nthOfType = i+1;
+        
+        // let snRankAndAthleteData = await getSnResults(i+1)
+        // let snAttempts = await getMakeMisses(i+1)
+        // let allSnData = combineAttemptsAndRankObjs(snRankAndAthleteData, snAttempts)
+        
+        // let cjAttempts = await getMakeMisses(i+1,false)
+        // let cjRanking = await getNameAndPlace(i+1);
+        // let allCjData = combineAttemptsAndRankObjs(cjAttempts,cjRanking)
+    
+        // let totalRanks = await getNameAndPlace(i+1,false);
+        
+        // let weightClassData = combineObjsByName(allCjData,totalRanks,allSnData)
+        // weightClassData = addWeightClassToObjArr(weightClass, weightClassData)
+        // console.log(weightClassData)
+        // meetData.push(weightClassData)
+    }
+    
+    // writeCsv(meetData)
+    
+    async function nthOfTypeIssues (){
+        let classIndex = 1;
+        missSelector = 'div.result__container.active div.cards:nth-of-type(5) div.card div.container div.col-md-3 div.row.no-gutters p'
+        
+        return await page.evaluate((selector)=>{
+            let snatches = Array.from(document.querySelectorAll(selector))
+            // this is getting the inner html of if there is a strike or not!!!
+            snMakes = snatches.map(div => {
+                    if(div.childNodes[2]){
+                    return div.childNodes[2].innerHTML
+                }
+                return ''
+            });
+            snatches = snatches.map((x)=>{
+                return  x.textContent.trim()
+            })
+            // return snatches
+        
+            // return snatch [1, 2, 3, total]
+            let cleanedSnatches = snatches.map(x=> x.split(/[:]/).map((x)=> x.trim())).map((x)=>x[1]);
+            snMakes.map((element, index)=>{
+                if(element && element.includes('<strike>')){
+                cleanedSnatches[index] = '-'+ cleanedSnatches[index]
+                }
+                return element
+            })
 
-    //div.results_title == new weight class
+            let cleanedArr = [];
+            for (let i = 4; i < cleanedSnatches.length; i += 4) {
+                cleanedArr.push(cleanedSnatches.slice(i, i + 4));
+            }
 
-
-    await page.screenshot({path: 'foo.png', fullPage: true})
+            cleanedArr = cleanedArr.map(el=>{
+                    return {
+                    'sn 1': el[0],
+                    'sn 2': el[1],
+                    'sn 3': el[2],
+                    'best sn': el[3],
+                    }
+            })
+            return cleanedArr    
+            return headersRemoved[1]
+        }, missSelector)
+    }
+    let foo = await nthOfTypeIssues();
+    console.log(foo)
+    //idk if htis is needed
+    // let snSelector = 'div.result__container.active div.results__title:nth-of-type(1) + div.results__title + div.cards div.card div.container'
+    // writeCsv(allWeightClassData)
+    
 
     console.log('done')
     await browser.close();
@@ -341,3 +334,36 @@ module.exports = {
     scrapeOneMeet:scrapeOneMeet
 }
 
+
+
+
+
+
+//this selector gets name rank nation
+// let snHeaderSelector = 'div.results__title + div.results__title + div.cards div.card.card__legend div.container'
+// let snHeaders = await page.evaluate((selector)=>{
+//     let headers = Array.from(document.querySelectorAll(selector))
+//     headers = headers.map((x)=>{
+//         return  x.textContent.trim()
+//     })
+
+//     let cleanedHeaders = headers.map(x=> {
+//         const cleanedData = x.replace(/\n/g, '');
+//         const splitData = cleanedData.split(':').map(item => item.trim());
+//         return splitData.filter(item => item !== ''); 
+//     }); 
+//     cleanedHeaders = cleanedHeaders.map(x=>{
+//         x[0] = 'sn ' + x[0]
+//         x[6] = 'sn ' + x[6]
+//         x[7] = 'sn ' + x[7]
+//         x[8] = 'sn ' + x[8]
+//         x[9] = 'best sn'
+//         return x
+
+//     })
+    
+    
+//     //needs to remove [0]
+//     return cleanedHeaders[0]
+//     // return headerArr[0]
+// }, snHeaderSelector)
