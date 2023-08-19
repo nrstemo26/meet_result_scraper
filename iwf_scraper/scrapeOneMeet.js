@@ -37,12 +37,16 @@ async function scrapeOneMeet(meetUrl, filePath){
     await page.goto(meetUrl, {
         waitUntil: 'networkidle0'
     })
+
+    //so i dont even need to select based on which si
     
     //clicks men's snatch/cj/total btn
     await page.click('#results_mens_snatch', {
         waitUntil: 'networkidle0'
     }) 
 
+
+    //wont need to click this. its all in the html
     //clicks women's sn/cj/total btn
     // await page.click('#results_womens_snatch', {
         // waitUntil: 'networkidle0'
@@ -61,8 +65,9 @@ async function scrapeOneMeet(meetUrl, filePath){
         },selector)
     }
 
-    async function getSnResults(classIndex){   
-        let snSelector = 'div.result__container.active div.results__title:nth-of-type(' + classIndex + ') + div.results__title + div.cards div.card div.container'
+    async function getSnResults(classIndex){
+        //could add   
+        let snSelector = 'div#men_snatchjerk div.results__title:nth-of-type(' + classIndex + ') + div.results__title + div.cards div.card div.container'
         //needs to get the strike
         return await page.evaluate((selector)=>{
         let snatches = Array.from(document.querySelectorAll(selector))
@@ -107,9 +112,9 @@ async function scrapeOneMeet(meetUrl, filePath){
         //first nth of type is weight class 2nd nth of type is 
         let missSelector;
         if(snatch){
-            missSelector = 'div.result__container.active div.results__title:nth-of-type('+ classIndex +') + div.results__title + div.cards div.card div.container div.col-md-3 div.row.no-gutters p'
+            missSelector = 'div#men_snatchjerk div.results__title:nth-of-type('+ classIndex +') + div.results__title + div.cards div.card div.container div.col-md-3 div.row.no-gutters p'
         }else{
-            missSelector = 'div.result__container.active div.results__title:nth-of-type('+ classIndex +') + div.results__title + div.cards + div.results__title + div.cards div.card div.container div.col-md-3 div.row.no-gutters p'
+            missSelector = 'div#men_snatchjerk div.results__title:nth-of-type('+ classIndex +') + div.results__title + div.cards + div.results__title + div.cards div.card div.container div.col-md-3 div.row.no-gutters p'
         }
         return await page.evaluate((selector, snatch)=>{
             let snatches = Array.from(document.querySelectorAll(selector))
@@ -272,12 +277,19 @@ async function scrapeOneMeet(meetUrl, filePath){
     
     // writeCsv(meetData)
     
+    
+
     async function nthOfTypeIssues (){
         let classIndex = 1;
-        missSelector = 'div.result__container.active div.cards:nth-of-type(5) div.card div.container div.col-md-3 div.row.no-gutters p'
+        let missSelector = 'div#men_snatchjerk div.cards div.card div.container div.row.now-gutters a'
         
         return await page.evaluate((selector)=>{
             let snatches = Array.from(document.querySelectorAll(selector))
+            snatches = snatches.map((x)=>{
+                return  x.textContent.trim()
+            })
+            return snatches
+
             // this is getting the inner html of if there is a strike or not!!!
             snMakes = snatches.map(div => {
                     if(div.childNodes[2]){
