@@ -38,6 +38,7 @@ async function scrapeOneMeet(meetUrl, filePath){
         waitUntil: 'networkidle0'
     })
 
+    //['#men_snatchjerk','#women_snatchjerk']
     //so i dont even need to select based on which si
     
     //clicks men's snatch/cj/total btn
@@ -281,12 +282,63 @@ async function scrapeOneMeet(meetUrl, filePath){
 
     async function nthOfTypeIssues (){
         let classIndex = 1;
-        let missSelector = 'div#men_snatchjerk div.cards div.card div.container div.row.now-gutters a'
+        // let missSelector = 'div#men_snatchjerk div.cards div.card div.container div.row.now-gutters a'
+        let missSelector = 'div#men_snatchjerk div.cards'
         
+
         return await page.evaluate((selector)=>{
-            let snatches = Array.from(document.querySelectorAll(selector))
+            let allCards = Array.from(document.querySelectorAll(selector))
+            //so 0,3,6... i*3     are snatches
+            //so 1,4,7... i*3 +1  are cjs
+            //so 2,5,8... i*3 + 2 are totals
+            let snatches = [];
+            let cjs = []
+            let totals = [];
+            for (let i = 0; i < allCards.length; i++) {
+                if (i % 3 === 0) {
+                    snatches.push(allCards[i]);
+                } else if (i % 3 === 1) {
+                    cjs.push(allCards[i]);
+                } else {
+                    totals.push(allCards[i]);
+                }
+            }
+
+            
+            return snatches
+
+            // let snatches = document.querySelector('div#men_snatchjerk div.cards:nth-of-type(1)')
+            return snatches
             snatches = snatches.map((x)=>{
                 return  x.textContent.trim()
+            })
+            return snatches
+            let cleanedSnatches = snatches.map(x=> {
+                const cleanedData = x.replace(/\n/g, '&');
+                const splitData = cleanedData.split(/[:&]/).map(item => item.trim());
+                return splitData.filter(item => item !== ''); 
+                
+            }); 
+            let headersRemoved = cleanedSnatches.map(x=>{
+                x[0] = '';
+                x[4] = '';
+                x[6] = '';
+                x[8] = '';
+                x[10] = '';
+                x[12] = '';
+                x[14] = '';
+                x[16] = '';
+                return x.filter(item => item !== '').slice(0,-4)
+            }).map((el)=>{
+                return {
+                    "sn rank": el[0],
+                    'name': el[1],
+                    'country': el[2],
+                    'birthday': el[3],
+                    'bw': el[4],
+                    'session': el[5],
+                }
+                
             })
             return snatches
 
@@ -303,7 +355,7 @@ async function scrapeOneMeet(meetUrl, filePath){
             // return snatches
         
             // return snatch [1, 2, 3, total]
-            let cleanedSnatches = snatches.map(x=> x.split(/[:]/).map((x)=> x.trim())).map((x)=>x[1]);
+            // let cleanedSnatches = snatches.map(x=> x.split(/[:]/).map((x)=> x.trim())).map((x)=>x[1]);
             snMakes.map((element, index)=>{
                 if(element && element.includes('<strike>')){
                 cleanedSnatches[index] = '-'+ cleanedSnatches[index]
@@ -330,6 +382,7 @@ async function scrapeOneMeet(meetUrl, filePath){
     }
     let foo = await nthOfTypeIssues();
     console.log(foo)
+    // console.log(foo.length)
     //idk if htis is needed
     // let snSelector = 'div.result__container.active div.results__title:nth-of-type(1) + div.results__title + div.cards div.card div.container'
     // writeCsv(allWeightClassData)
