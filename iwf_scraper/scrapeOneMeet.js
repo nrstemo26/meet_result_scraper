@@ -254,7 +254,7 @@ async function scrapeOneMeet(meetUrl, filePath){
     let womenWeightClasses = await getWeightClasses(womenSelector)
     
     let meetData = []
-    for(let i=0; i <mensWeightClasses.length; i++ ){
+    for(let i=0; i < mensWeightClasses.length; i++ ){
         //needs to get added to one of the evaluates to add the weight class in for the athletes
         // let weightClass = mensWeightClasses[i]
         // console.log(weightClass)
@@ -280,106 +280,98 @@ async function scrapeOneMeet(meetUrl, filePath){
     
     
 
-    async function nthOfTypeIssues (){
-        let classIndex = 1;
-        // let missSelector = 'div#men_snatchjerk div.cards div.card div.container div.row.now-gutters a'
-        let missSelector = 'div#men_snatchjerk div.cards'
-        
+    function sanitizeResults(data){
+        const athletes = [];
+        let currentAthlete = {};
 
-        return await page.evaluate((selector)=>{
-            let allCards = Array.from(document.querySelectorAll(selector))
-            //so 0,3,6... i*3     are snatches
-            //so 1,4,7... i*3 +1  are cjs
-            //so 2,5,8... i*3 + 2 are totals
-            let snatches = [];
-            let cjs = []
-            let totals = [];
-            for (let i = 0; i < allCards.length; i++) {
-                if (i % 3 === 0) {
-                    snatches.push(allCards[i]);
-                } else if (i % 3 === 1) {
-                    cjs.push(allCards[i]);
-                } else {
-                    totals.push(allCards[i]);
-                }
+        for (let i = 0; i < data.length; i++) {
+        const item = data[i];
+        if (item.startsWith('Rank:')) {
+            if (Object.keys(currentAthlete).length > 0) {
+            athletes.push(currentAthlete);
+            currentAthlete = {};
             }
-
+            currentAthlete['Rank'] = item.split(' ')[1];
             
-            return snatches
+            // Assume the athlete's name and nation are the next two items
+            currentAthlete['Name'] = data[i + 1];
+            currentAthlete['Nation'] = data[i + 2];
+            
+            // Skip the next two items in the loop
+            i += 2;
+        } else {
+            const [key, value] = item.split(':');
+            currentAthlete[key.trim()] = value.trim();
+        }
+        }
 
-            // let snatches = document.querySelector('div#men_snatchjerk div.cards:nth-of-type(1)')
-            return snatches
-            snatches = snatches.map((x)=>{
-                return  x.textContent.trim()
-            })
-            return snatches
-            let cleanedSnatches = snatches.map(x=> {
-                const cleanedData = x.replace(/\n/g, '&');
-                const splitData = cleanedData.split(/[:&]/).map(item => item.trim());
-                return splitData.filter(item => item !== ''); 
-                
-            }); 
-            let headersRemoved = cleanedSnatches.map(x=>{
-                x[0] = '';
-                x[4] = '';
-                x[6] = '';
-                x[8] = '';
-                x[10] = '';
-                x[12] = '';
-                x[14] = '';
-                x[16] = '';
-                return x.filter(item => item !== '').slice(0,-4)
-            }).map((el)=>{
-                return {
-                    "sn rank": el[0],
-                    'name': el[1],
-                    'country': el[2],
-                    'birthday': el[3],
-                    'bw': el[4],
-                    'session': el[5],
-                }
-                
-            })
-            return snatches
-
-            // this is getting the inner html of if there is a strike or not!!!
-            snMakes = snatches.map(div => {
-                    if(div.childNodes[2]){
-                    return div.childNodes[2].innerHTML
-                }
-                return ''
-            });
-            snatches = snatches.map((x)=>{
-                return  x.textContent.trim()
-            })
-            // return snatches
-        
-            // return snatch [1, 2, 3, total]
-            // let cleanedSnatches = snatches.map(x=> x.split(/[:]/).map((x)=> x.trim())).map((x)=>x[1]);
-            snMakes.map((element, index)=>{
-                if(element && element.includes('<strike>')){
-                cleanedSnatches[index] = '-'+ cleanedSnatches[index]
-                }
-                return element
-            })
-
-            let cleanedArr = [];
-            for (let i = 4; i < cleanedSnatches.length; i += 4) {
-                cleanedArr.push(cleanedSnatches.slice(i, i + 4));
-            }
-
-            cleanedArr = cleanedArr.map(el=>{
-                    return {
-                    'sn 1': el[0],
-                    'sn 2': el[1],
-                    'sn 3': el[2],
-                    'best sn': el[3],
-                    }
-            })
-            return cleanedArr    
-            return headersRemoved[1]
-        }, missSelector)
+        athletes.push(currentAthlete);
+        return athletes;
     }
+
+ 
+    async function nthOfTypeIssues (){
+        // let classIndex = 1;
+        // let missSelector = 'div#men_snatchjerk div.cards div.card div.container div.row.now-gutters a'
+        // let missSelector = 'div#men_snatchjerk div.cards'
+
+        let allCards = await page.$$('div#men_snatchjerk div.cards')
+        // console.log(allCards);
+        let snatches = [];
+        let cjs = []
+        let totals = [];
+        for (let i = 0; i < allCards.length; i++) {
+            if (i % 3 === 0) {
+                // let foo = await allCards[i].$$('p')
+                let weightClassSn = await allCards[i].evaluate((document) => {
+                    // let snatches = Array.from(document.querySelectorAll('p'))
+                    let snatches = Array.from(document.querySelectorAll('p'))
+                    snatches = snatches.map((x)=>{
+                        return x.textContent.trim()
+                    })
+
+
+                    return snatches
+                }, allCards[i])
+
+                let snObj = sanitizeResults(weightClassSn)
+                //sanitize snatch results
+                //not getting make miss
+                snatches.push(snObj);
+
+
+            } else if (i % 3 === 1) {
+                let weightClassCj = await allCards[i].evaluate((document) => {
+                    // let snatches = Array.from(document.querySelectorAll('p'))
+                    let cjs = Array.from(document.querySelectorAll('p'))
+                    cjs = cjs.map((x)=>{
+                        return  x.textContent.trim()
+                    })
+                    return cjs
+                }, allCards[i] )
+                //sanitize cjs results
+                //not getting make miss
+                cjs.push(weightClassCj);
+            } else {
+                let weightClassTotals = await allCards[i].evaluate((document) => {
+                    // let snatches = Array.from(document.querySelectorAll('p'))
+                    let totals = Array.from(document.querySelectorAll('p'))
+                    totals = totals.map((x)=>{
+                        return x.textContent.trim()
+                    })
+                    return totals
+                }, allCards[i] )
+                //sanitize Totals results
+                //not getting make miss
+                totals.push(weightClassTotals);
+            }
+        }
+        console.log(snatches[0])
+        
+
+     
+    }
+
     let foo = await nthOfTypeIssues();
     console.log(foo)
     // console.log(foo.length)
