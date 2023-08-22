@@ -17,19 +17,25 @@ const {getYearMetadata} = require('./getYearMetadata')
 //results by events/results-by-events-old-bw/
 //if we put the meet url as the whole url then we can go thru that meet metadata 
 //doc easily without
-let allMeetMetadata = [];
-let urls = []
+async function run(){
 
-let yearMetadataUrl = `https://iwf.sport/results/results-by-events/?event_year=${2023}`
-getYearMetadata(yearMetadataUrl)
+
+let allMeetMetadata = [];
+let allUrls = []
+
 
 //scrapes new weightclasses
 for (let i = 2018; i < 2024; i++){
     let yearMetadataUrl = `https://iwf.sport/results/results-by-events/?event_year=${i}`
-    //scrape this year's metadata
-    //push to all meet metadata
-    //push urls to urls
+    if(i == 2023){
+         yearMetadataUrl = `https://iwf.sport/results/results-by-events/`
+    }
+    let {yearMetadata, urls} = await getYearMetadata(yearMetadataUrl)
+    allMeetMetadata.push(...yearMetadata)
+    allUrls.push(...urls)
 }
+console.log(allMeetMetadata.length)
+console.log(allUrls.length)
 
 let oldUrls = []
 //scrapes old weightclasses
@@ -54,3 +60,7 @@ let oldUrls = []
 // have it return an array of  ?event_id=562
 // use array to loop and scrape 1 meet with id
 //
+
+}
+
+run()
