@@ -281,99 +281,211 @@ async function scrapeOneMeet(meetUrl, filePath){
     
 
     function sanitizeResults(data){
+        // console.log(data)
         const athletes = [];
-        let currentAthlete = {};
-
+        let currentAthlete = {};          
         for (let i = 0; i < data.length; i++) {
-        const item = data[i];
+            const item = data[i];
         if (item.startsWith('Rank:')) {
             if (Object.keys(currentAthlete).length > 0) {
-            athletes.push(currentAthlete);
-            currentAthlete = {};
+                athletes.push(currentAthlete);
+                currentAthlete = {};
             }
-            currentAthlete['Rank'] = item.split(' ')[1];
+            currentAthlete['rank'] = item.split(' ')[1];
             
             // Assume the athlete's name and nation are the next two items
-            currentAthlete['Name'] = data[i + 1];
-            currentAthlete['Nation'] = data[i + 2];
+            currentAthlete['name'] = data[i + 1];
+            currentAthlete['nation'] = data[i + 2];
             
             // Skip the next two items in the loop
             i += 2;
-        } else {
-            const [key, value] = item.split(':');
-            currentAthlete[key.trim()] = value.trim();
-        }
+            } else {
+                const [key, value] = item.split(':');
+                currentAthlete[key.trim().toLowerCase()] = value.trim();
+            }
+
         }
 
         athletes.push(currentAthlete);
         return athletes;
     }
 
- 
-    async function nthOfTypeIssues (){
-        // let classIndex = 1;
-        // let missSelector = 'div#men_snatchjerk div.cards div.card div.container div.row.now-gutters a'
-        // let missSelector = 'div#men_snatchjerk div.cards'
+    function delete123(dataArray){
+        return dataArray.map(obj => {
+            delete obj['1'];
+            delete obj['2'];
+            delete obj['3'];
+            delete obj['rank']
+            delete obj['total']
+            return obj;
+          });
+        
+    }
 
+    function sanitizeTotals(data){ 
+        // Initialize an array to store athlete objects
+        const athletes = [];
+        let currentAthlete = null; // Initialize an empty object to store current athlete data    
+        
+        // Iterate through the data
+        for (let i = 0; i < data.length; i++) {
+            const key = data[i];
+        
+            // Check if the key contains a colon (':'), indicating it's a field with a value
+            if (key.includes(':')) {
+            const [field, value] = key.split(':');
+            if (field.trim() === 'Rank') {
+                // If the field is 'Rank', create a new athlete object
+                if (currentAthlete) {
+                athletes.push(currentAthlete);
+                }
+                currentAthlete = { 'total rank': value.trim() };
+            }else if(field.trim() === 'CI&Jerk'){
+                currentAthlete['cj'] = value.trim().toLowerCase()
+            } else {
+                // Otherwise, add the field and value to the current athlete object
+                currentAthlete[field.trim().toLowerCase()] = value.trim().toLowerCase();
+            }
+            } else {
+            // If it doesn't contain a colon, it's likely an athlete name
+            // Extract Name and Nation
+                currentAthlete.name = data[i];
+                currentAthlete.nation = data[i + 1];
+                // Move the index ahead by 1 to skip the nation
+                i++;
+            }
+        }
+        
+        // Push the last athlete object to the array
+        if (currentAthlete) {
+            athletes.push(currentAthlete);
+        }
+        console.log(athletes)
+        return athletes
+    }
+
+    function combineObjs(array1, array2, liftType){
+          const combinedArray = [];
+          
+          for (let i = 0; i < array1.length; i++) {
+            const obj1 = array1[i];
+            const obj2 = array2[i];
+            let combinedObj = {}
+            if(liftType == 'sn'){
+                combinedObj = {
+                  ...obj1,
+                  'sn rank': obj1['rank'], // Copy properties from the first array
+                  'sn 1': obj2['sn 1'],
+                  'sn 2': obj2['sn 2'],
+                  'sn 3': obj2['sn 3'],
+                  //'best sn': obj2['best sn']
+                };
+            }if(liftType =='cj'){
+                combinedObj = {
+                    ...obj1,
+                    'cj rank': obj1['rank'], // Copy properties from the first array
+                    'cj 1': obj2['sn 1'],
+                    'cj 2': obj2['sn 2'],
+                    'cj 3': obj2['sn 3'],
+                   // 'best cj': obj2['best sn']
+                  };
+            }
+          
+            combinedArray.push(combinedObj);
+          }      
+          return combinedArray
+    }
+ 
+
+
+    async function nthOfTypeIssues (){
         let allCards = await page.$$('div#men_snatchjerk div.cards')
-        // console.log(allCards);
         let snatches = [];
         let cjs = []
         let totals = [];
+        let allResults = []
         for (let i = 0; i < allCards.length; i++) {
+            let weightClassRes = await allCards[i].evaluate((document) => {
+                let results = Array.from(document.querySelectorAll('p'))
+                results = results.map(x=> x.textContent.trim())
+                return results
+            }, allCards[i])
+            
+            let makeMiss = await page.evaluate((document)=>{
+                let lifts = Array.from(document.querySelectorAll('div.col-md-3 div.row.no-gutters p'))
+                let makes = lifts.map(div => {
+                    if(div.childNodes[2]){
+                        return div.childNodes[2].innerHTML
+                    }
+                    return ''
+                });
+                
+                let cleanedMakes = makes.map((item, index)=>{
+                    if (item === null) {
+                        return null; // Preserve null values
+                      }
+                      if (item && item.includes('<strike>')) {
+                        // Remove <strike> tags and convert to a negative number
+                        const numberValue = parseInt(item.replace(/<\/?strike>/g, ''), 10);
+                        return -numberValue;
+                      }
+                      // Convert regular numbers to integers
+                      return parseInt(item, 10);
+                })
+
+                let cleanedArr = [];
+                for (let i = 4; i < cleanedMakes.length; i += 4) {
+                    cleanedArr.push(cleanedMakes.slice(i, i + 4));
+                }
+    
+                cleanedArr = cleanedArr.map(el=>{
+                        let bestSn = Math.max(el[0],el[1],el[2])
+                        return {
+                        'sn 1': el[0],
+                        'sn 2': el[1],
+                        'sn 3': el[2],
+                        'best sn': bestSn > 0 ? bestSn: '---',
+                        }
+                })
+                return cleanedArr    
+            }, allCards[i])
+
             if (i % 3 === 0) {
-                // let foo = await allCards[i].$$('p')
-                let weightClassSn = await allCards[i].evaluate((document) => {
-                    // let snatches = Array.from(document.querySelectorAll('p'))
-                    let snatches = Array.from(document.querySelectorAll('p'))
-                    snatches = snatches.map((x)=>{
-                        return x.textContent.trim()
-                    })
-
-
-                    return snatches
-                }, allCards[i])
-
-                let snObj = sanitizeResults(weightClassSn)
-                //sanitize snatch results
-                //not getting make miss
+                let weightClassSn = weightClassRes
+                let snObj = delete123(combineObjs(sanitizeResults(weightClassSn).slice(1), makeMiss, 'sn'))
                 snatches.push(snObj);
-
-
             } else if (i % 3 === 1) {
-                let weightClassCj = await allCards[i].evaluate((document) => {
-                    // let snatches = Array.from(document.querySelectorAll('p'))
-                    let cjs = Array.from(document.querySelectorAll('p'))
-                    cjs = cjs.map((x)=>{
-                        return  x.textContent.trim()
-                    })
-                    return cjs
-                }, allCards[i] )
+                let weightClassCj = weightClassRes;
+                let cjObj = delete123(combineObjs(sanitizeResults(weightClassCj).slice(1), makeMiss, 'cj'))
+               // console.log(cjObj)
                 //sanitize cjs results
                 //not getting make miss
-                cjs.push(weightClassCj);
+                cjs.push(cjObj);
             } else {
                 let weightClassTotals = await allCards[i].evaluate((document) => {
-                    // let snatches = Array.from(document.querySelectorAll('p'))
-                    let totals = Array.from(document.querySelectorAll('p'))
-                    totals = totals.map((x)=>{
-                        return x.textContent.trim()
-                    })
-                    return totals
-                }, allCards[i] )
-                //sanitize Totals results
-                //not getting make miss
+                    let results = Array.from(document.querySelectorAll('p'))
+                    results = results.map(x=> x.textContent.trim())
+                    return results
+                }, allCards[i])
+                
+                // weightClassTotals = weightClassTotals.slice(9)
+                weightClassTotals = sanitizeTotals(weightClassTotals.slice(9))
                 totals.push(weightClassTotals);
+
+                //at this point we should have the weight class sn, cj, total
+                //we need to combine all of them
             }
         }
-        console.log(snatches[0])
-        
-
-     
+        //combines objs from sn total cj from each weight class
+        for(let i = 0; i< 1; i++){
+            let weightClassRes = combineObjsByName(snatches[i],cjs[i],totals[i])
+            allResults.push(weightClassRes)
+        }
+        console.log(allResults)
     }
 
     let foo = await nthOfTypeIssues();
-    console.log(foo)
+    // console.log(foo)
     // console.log(foo.length)
     //idk if htis is needed
     // let snSelector = 'div.result__container.active div.results__title:nth-of-type(1) + div.results__title + div.cards div.card div.container'
