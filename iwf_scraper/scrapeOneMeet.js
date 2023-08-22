@@ -398,8 +398,11 @@ async function scrapeOneMeet(meetUrl, filePath){
  
 
 
-    async function nthOfTypeIssues (){
-        let allCards = await page.$$('div#men_snatchjerk div.cards')
+    let mensSelector = 'div#men_snatchjerk div.cards'
+    let womensSelector = 'div#women_snatchjerk div.cards'
+
+    async function nthOfTypeIssues (selector){
+        let allCards = await page.$$(selector)
         let snatches = [];
         let cjs = []
         let totals = [];
@@ -484,7 +487,7 @@ async function scrapeOneMeet(meetUrl, filePath){
         console.log(allResults)
     }
 
-    let foo = await nthOfTypeIssues();
+    let foo = await nthOfTypeIssues(mensSelector);
     // console.log(foo)
     // console.log(foo.length)
     //idk if htis is needed
