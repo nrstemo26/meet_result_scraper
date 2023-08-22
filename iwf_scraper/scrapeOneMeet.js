@@ -37,26 +37,12 @@ async function scrapeOneMeet(meetUrl, filePath){
     await page.goto(meetUrl, {
         waitUntil: 'networkidle0'
     })
-
-    //['#men_snatchjerk','#women_snatchjerk']
-    //so i dont even need to select based on which si
     
-    //clicks men's snatch/cj/total btn
-    await page.click('#results_mens_snatch', {
-        waitUntil: 'networkidle0'
-    }) 
-
-
-    //wont need to click this. its all in the html
-    //clicks women's sn/cj/total btn
-    // await page.click('#results_womens_snatch', {
-        // waitUntil: 'networkidle0'
-    // })
-
+    let meetNumber = meetUrl.split('?event_id=')[1]
+    const fullPath = `${filePath}meet_${meetNumber}.csv`
 
     //this gets the weight class name
     async function getWeightClasses(selector){
-
         return await page.evaluate((selector)=>{
             let elArr = Array.from(document.querySelectorAll(selector))
             elArr = elArr.map((x)=>{
@@ -248,35 +234,8 @@ async function scrapeOneMeet(meetUrl, filePath){
     
     
     
-    // let meetData = []
-    // for(let i=0; i < mensWeightClasses.length; i++ ){
-    //     //needs to get added to one of the evaluates to add the weight class in for the athletes
-    //     // let weightClass = mensWeightClasses[i]
-    //     // console.log(weightClass)
-    //     // let nthOfType = i+1;
-        
-    //     // let snRankAndAthleteData = await getSnResults(i+1)
-    //     // let snAttempts = await getMakeMisses(i+1)
-    //     // let allSnData = combineAttemptsAndRankObjs(snRankAndAthleteData, snAttempts)
-        
-    //     // let cjAttempts = await getMakeMisses(i+1,false)
-    //     // let cjRanking = await getNameAndPlace(i+1);
-    //     // let allCjData = combineAttemptsAndRankObjs(cjAttempts,cjRanking)
-    
-    //     // let totalRanks = await getNameAndPlace(i+1,false);
-        
-    //     // let weightClassData = combineObjsByName(allCjData,totalRanks,allSnData)
-    //     // weightClassData = addWeightClassToObjArr(weightClass, weightClassData)
-    //     // console.log(weightClassData)
-    //     // meetData.push(weightClassData)
-    // }
-    
-    // writeCsv(meetData)
-    
-    
 
     function sanitizeResults(data){
-        // console.log(data)
         const athletes = [];
         let currentAthlete = {};          
         for (let i = 0; i < data.length; i++) {
@@ -395,8 +354,9 @@ async function scrapeOneMeet(meetUrl, filePath){
         return flattenedArray
     }
  
-
-
+    const meetNameEl = await page.$('.title__event .row .col-12 h2')
+    const meetName = await (await meetNameEl.getProperty('textContent')).jsonValue()
+    console.log(meetName)
    
     async function getGenderData (genderSelector,weightClassArr){
         let allCards = await page.$$(genderSelector)
@@ -455,7 +415,11 @@ async function scrapeOneMeet(meetUrl, filePath){
                 let weightClassSn = weightClassRes 
                 let snObj = delete123(combineObjs(sanitizeResults(weightClassSn).slice(1), makeMiss, 'sn'))
                 snObj = snObj.map(el=>{
-                    return {...el,'weight class':weightClassArr[snatches.length]}
+                    return {
+                        ...el,
+                        'weight class':weightClassArr[snatches.length],
+                        'meet name': `'${meetName}'`
+                    }
                 })
                 snatches.push(snObj);
             } else if (i % 3 === 1) {
@@ -488,24 +452,20 @@ async function scrapeOneMeet(meetUrl, filePath){
 
     let allMensAttempts = await getGenderData(menSelector, menWeightClasses);
     let allFemaleAttempts = await getGenderData(womenSelector, womenWeightClasses);
-   
-    writeCsv(flattenArray([...allMensAttempts,...allFemaleAttempts]))
+
+    writeCsv(flattenArray([...allMensAttempts,...allFemaleAttempts]),fullPath)
     
 
     console.log('done')
     await browser.close();
 }
 
-scrapeOneMeet('https://iwf.sport/results/results-by-events/?event_id=576','./data/foo.csv')
+scrapeOneMeet('https://iwf.sport/results/results-by-events/?event_id=576', './iwf_scraper/data/')
 
 
 module.exports = {
     scrapeOneMeet:scrapeOneMeet
 }
-
-
-
-
 
 
 //this selector gets name rank nation
@@ -536,3 +496,32 @@ module.exports = {
 //     return cleanedHeaders[0]
 //     // return headerArr[0]
 // }, snHeaderSelector)
+
+
+
+    
+    // let meetData = []
+    // for(let i=0; i < mensWeightClasses.length; i++ ){
+    //     //needs to get added to one of the evaluates to add the weight class in for the athletes
+    //     // let weightClass = mensWeightClasses[i]
+    //     // console.log(weightClass)
+    //     // let nthOfType = i+1;
+        
+    //     // let snRankAndAthleteData = await getSnResults(i+1)
+    //     // let snAttempts = await getMakeMisses(i+1)
+    //     // let allSnData = combineAttemptsAndRankObjs(snRankAndAthleteData, snAttempts)
+        
+    //     // let cjAttempts = await getMakeMisses(i+1,false)
+    //     // let cjRanking = await getNameAndPlace(i+1);
+    //     // let allCjData = combineAttemptsAndRankObjs(cjAttempts,cjRanking)
+    
+    //     // let totalRanks = await getNameAndPlace(i+1,false);
+        
+    //     // let weightClassData = combineObjsByName(allCjData,totalRanks,allSnData)
+    //     // weightClassData = addWeightClassToObjArr(weightClass, weightClassData)
+    //     // console.log(weightClassData)
+    //     // meetData.push(weightClassData)
+    // }
+    
+    // writeCsv(meetData)
+    
