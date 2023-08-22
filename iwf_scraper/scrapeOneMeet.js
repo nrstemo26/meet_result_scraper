@@ -397,18 +397,9 @@ async function scrapeOneMeet(meetUrl, filePath){
  
 
 
-    let mensSelector = 'div#men_snatchjerk div.cards'
-    //get weightclass
-    // let menSelector = '#men_snatchjerk div.results__title div.container div.row div.col-12 h3'
-    let mensWeightClasses = await getWeightClasses('#men_snatchjerk div.results__title div.container div.row div.col-12 h3')
-    console.log(mensWeightClasses)
-
-    // let womenSelector = '#women_snatchjerk div.results__title div.container div.row div.col-12 h3'
-    let womensSelector = 'div#women_snatchjerk div.cards'
-    let womenWeightClasses = await getWeightClasses('#women_snatchjerk div.results__title div.container div.row div.col-12 h3')
-
-    async function nthOfTypeIssues (selector){
-        let allCards = await page.$$(selector)
+   
+    async function getGenderData (genderSelector,weightClassArr){
+        let allCards = await page.$$(genderSelector)
         let snatches = [];
         let cjs = []
         let totals = [];
@@ -461,14 +452,11 @@ async function scrapeOneMeet(meetUrl, filePath){
             }, allCards[i])
 
             if (i % 3 === 0) {
-                console.log(mensWeightClasses[snatches.length])
-                let weightClassSn = weightClassRes
-                //add in bw to 
+                let weightClassSn = weightClassRes 
                 let snObj = delete123(combineObjs(sanitizeResults(weightClassSn).slice(1), makeMiss, 'sn'))
                 snObj = snObj.map(el=>{
-                    return {...el,'weight class':mensWeightClasses[snatches.length]}
+                    return {...el,'weight class':weightClassArr[snatches.length]}
                 })
-                console.log(snObj)
                 snatches.push(snObj);
             } else if (i % 3 === 1) {
                 let weightClassCj = weightClassRes;
@@ -485,17 +473,23 @@ async function scrapeOneMeet(meetUrl, filePath){
             }
         }
         //combines objs from sn total cj from each weight class
-        for(let i = 0; i< 1; i++){
+        for(let i = 0; i< snatches.length; i++){
             let weightClassRes = combineObjsByName(snatches[i],cjs[i],totals[i])
             allResults.push(weightClassRes)
         }
-        // console.log(allResults)
         return allResults
     }
 
-    let allMensAttempts = await nthOfTypeIssues(mensSelector);
-    //console.log(allMensAttempts[0])
-    writeCsv(flattenArray(allMensAttempts))
+    let menSelector = 'div#men_snatchjerk div.cards'
+    let menWeightClasses = await getWeightClasses('#men_snatchjerk div.results__title div.container div.row div.col-12 h3')
+
+    let womenSelector = 'div#women_snatchjerk div.cards'
+    let womenWeightClasses = await getWeightClasses('#women_snatchjerk div.results__title div.container div.row div.col-12 h3')
+
+    let allMensAttempts = await getGenderData(menSelector, menWeightClasses);
+    let allFemaleAttempts = await getGenderData(womenSelector, womenWeightClasses);
+   
+    writeCsv(flattenArray([...allMensAttempts,...allFemaleAttempts]))
     
 
     console.log('done')
