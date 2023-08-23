@@ -274,7 +274,7 @@ async function scrapeOneMeet(meetUrl, filePath){
     await browser.close();
 }
 
-scrapeOneMeet('https://iwf.sport/results/results-by-events/?event_id=576', './iwf_scraper/data/')
+// scrapeOneMeet('https://iwf.sport/results/results-by-events/?event_id=576', './iwf_scraper/data/')
 
 
 module.exports = {
