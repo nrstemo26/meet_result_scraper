@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer')
 
-async function getYearMetadata(url, filePath){
+async function getYearMetadata(url, oldClasses = false){
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.setViewport({width:1500, height:1000})
@@ -8,7 +8,7 @@ async function getYearMetadata(url, filePath){
         waitUntil: 'networkidle0'
     })
 
-    console.log('starting')
+    // console.log('starting')
 
  
     const allMeetEls = await page.$('.cards')
@@ -43,13 +43,13 @@ async function getYearMetadata(url, filePath){
             title: titles[i],
             date: dates[i],
             location: locations[i],
-            'meet url id': meetUrlIds[i]
+            'meet url id': meetUrlIds[i],
+            'old weight classes': oldClasses
         };
         combinedObjs.push(obj);
     }
-    // console.log(combinedObjs)
     
-    console.log('done')
+    // console.log('done')
     browser.close()
     return {
         yearMetadata:combinedObjs,
