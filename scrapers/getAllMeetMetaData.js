@@ -22,9 +22,8 @@ async function getAllMeetMetaData(filePath, searchDate){
         await page.waitForSelector('div.v-menu__content')
         await page.click('div.v-menu__content div.v-list.v-select-list.v-sheet div.v-list-item.v-list-item--link:nth-of-type(6)')
         await page.waitForNetworkIdle()
+        console.log('got more results on page')
     }
-
-    await getMoreResultsOnPage()
 
     async function getPageData(){
         return await page.$eval(
@@ -58,6 +57,9 @@ async function getAllMeetMetaData(filePath, searchDate){
         await page.click('.data-table div.container.pb-0 div.s80-filter div.row.no-gutters .v-badge button.v-btn');      
     }
     
+    //takes pagination from 30/page to 50/page
+    await getMoreResultsOnPage()
+
     await clickFilter()
 
     //waits for the date picker to be available and then clicks it
@@ -70,9 +72,9 @@ async function getAllMeetMetaData(filePath, searchDate){
 
     ///************** does month need to change?? ***/
     let month = '';
+    //this could change to a certain date?
     //it finds the month name being January 2011 or whatever is declared
     while(month != searchDate){
-        // console.log('in loop')
         await moveBackMonth();
         month = await page.evaluate(()=>{
             return document.querySelector('div.v-date-picker-header__value div.accent--text button').textContent.trim()
@@ -92,15 +94,11 @@ async function getAllMeetMetaData(filePath, searchDate){
    await page.waitForNetworkIdle()
    await page.waitForNetworkIdle()
    
-//    await page.screenshot({ path: 'date2.png', fullPage: true })
-   
     // await page.screenshot({ path: 'page.png', fullPage: true })
     await getTableWriteCsv(filePath, page)
 
     console.log('starting scraping')
-
     
-    //**// */
     await getMeetsOnPage(getAmountMeetsOnPage(await getPageData()), page, filePath);
     console.log(await getPageData())
 
