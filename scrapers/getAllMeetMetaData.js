@@ -17,6 +17,15 @@ async function getAllMeetMetaData(filePath, searchDate){
         waitUntil: 'networkidle0'
     })
 
+    async function getMoreResultsOnPage(){
+        await page.click('div.v-select__slot div.v-input__append-inner div.v-input__icon')
+        await page.waitForSelector('div.v-menu__content')
+        await page.click('div.v-menu__content div.v-list.v-select-list.v-sheet div.v-list-item.v-list-item--link:nth-of-type(6)')
+        await page.waitForNetworkIdle()
+    }
+
+    await getMoreResultsOnPage()
+
     async function getPageData(){
         return await page.$eval(
             ".data-table div div.v-data-table div.v-data-footer div.v-data-footer__pagination",
