@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer')
 const { createCSVfromArray, writeCSV } = require('../utils/csv_utils');
 const { write } = require('fs');
-const {handleTotalAthleteString,getAmountMeetsOnPage} = require('../utils/string_utils')
+const {handleTotalAthleteString, getAmountMeetsOnPage} = require('../utils/string_utils')
 const {getMeetsOnPage,
     getTableWriteCsv} = require('../utils/scraping_utils')
 
@@ -31,12 +31,14 @@ async function getAllMeetMetaData(filePath, searchDate){
     async function clickDate(){
         console.log('getting the date')
         await page.waitForSelector('div.v-date-picker-table table tbody tr td:nth-of-type(1) button.v-btn div.v-btn__content')
+        // await page.screenshot({ path: 'date.png', fullPage: true })
         await page.click("div.v-date-picker-table table tbody tr td:nth-of-type(1) button.v-btn div.v-btn__content")  
     }
 
     async function clickApply(){
         console.log('clicking apply')
         await page.waitForSelector("div.v-card__actions.justify-end button.primary.my-2.v-btn.v-btn--is-elevated")
+        // await page.screenshot({ path: 'apply.png', fullPage: true })
         await page.click("div.v-card__actions.justify-end button.primary.my-2.v-btn.v-btn--is-elevated", {
             waitUntil: 'networkidle0'
         })     
@@ -56,30 +58,40 @@ async function getAllMeetMetaData(filePath, searchDate){
     //waits for the < button to be visible and clickable
     await page.waitForSelector('div.v-date-picker-header__value div.accent--text', { visible:true })
     
+
+    ///************** does month need to change?? ***/
     let month = '';
-    //it finds the month name being January 2011
+    //it finds the month name being January 2011 or whatever is declared
     while(month != searchDate){
         // console.log('in loop')
         await moveBackMonth();
         month = await page.evaluate(()=>{
             return document.querySelector('div.v-date-picker-header__value div.accent--text button').textContent.trim()
         })
-        console.log(month)
+        // console.log(month)
     }
     console.log('got to', month)
     
-
-    await clickDate()
-    await clickApply() 
-    
-    //waits for the data to actually load before we get all of the meet data
-    await page.waitForNetworkIdle()
-
+//    await page.screenshot({ path: 'date.png', fullPage: true })
+   
+   await page.waitForNetworkIdle()
+   await clickDate()
+   await page.waitForNetworkIdle()
+   await clickApply() 
+   
+   //waits for the data to actually load before we get all of the meet data
+   await page.waitForNetworkIdle()
+   await page.waitForNetworkIdle()
+   
+//    await page.screenshot({ path: 'date2.png', fullPage: true })
+   
+    // await page.screenshot({ path: 'page.png', fullPage: true })
     await getTableWriteCsv(filePath, page)
 
     console.log('starting scraping')
 
     
+    //**// */
     await getMeetsOnPage(getAmountMeetsOnPage(await getPageData()), page, filePath);
     console.log(await getPageData())
 
