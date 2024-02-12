@@ -13,7 +13,6 @@ function sanitize(meetPath){
         separator: "|",
     }
 
-
     fs.createReadStream('current_metadata.csv')
         .pipe(csv(csvOptions))
         .on('data',(data)=>{
