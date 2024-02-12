@@ -6,6 +6,7 @@ const util = require('util');
 const readdir = util.promisify(fs.readdir);
 const unlink = util.promisify(fs.unlink);
 
+//utility function for writing csvs
 function mapToString(map){
   let str = 'Meet|Level|Date|Results|Meet Url\n';
   map.forEach((value,key,map)=>{
@@ -89,7 +90,7 @@ async function sanitizeData(file){
   console.log('sanitizing')
   return new Promise((resolve, reject) => {
       fs.createReadStream(file)
-        .pipe(csv({ separator: "|" })
+        .pipe(csv({separator: "|"}))
         .on('data',(data)=>{
           let meetData;
           if(!data.Level){
@@ -120,10 +121,7 @@ async function sanitizeData(file){
           // console.log(results.size)
           //write new file here
 
-          //******************************** */
-          //********************************* */
-          //foo.csv needs to change
-          fs.writeFile('./scraped_data/foo.csv', mapToString(results), "utf-8",(err)=>{
+          fs.writeFile('foo.csv', mapToString(results), "utf-8",(err)=>{
               if(err) console.log(err);
               else {
                   console.log('data saved')
