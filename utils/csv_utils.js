@@ -140,6 +140,73 @@ async function sanitizeData(){
 }
 
 
+function compareCsvs(latest,old){
+
+  let newMeets = [];
+  let oldMeets = [];
+  //read all of old metadata csv
+  //store in variable 
+  return new Promise((resolve, reject) => {
+  fs.createReadStream(old)
+  .pipe(csv(csvOptions))
+  .on('data',(data)=>{
+      oldMeets.push(data)
+  })
+  .on('end',()=>{
+      fs.createReadStream(latest)
+      .pipe(csv(csvOptions))
+      .on('data',(data)=>{
+          newMeets.push(data);
+      })
+      .on('end',()=>{
+          const isNotInFirstArray = (element) => {
+              return !oldMeets.some(item =>
+                item.Meet === element.Meet &&
+                item.Level === element.Level &&
+                item.Date === element.Date &&
+                item.Results === element.Results &&
+                item['Meet Url'] === element['Meet Url']
+              );
+            };
+      
+          console.log('done comapring')
+          //get new meets from the 2 meets
+          const unmatched = newMeets.filter(isNotInFirstArray);
+          // console.log(unmatched)
+          // console.log(unmatched.length)
+
+          //transform to string to write ascsv
+          const csvData = 'Meet|Level|Date|Results|Meet Url\n' + unmatched.map(element =>
+              `${element.Meet}|${element.Level}|${element.Date}|${element.Results}|${element['Meet Url']}`
+            ).join('\n');
+
+          //write as csv
+          //could sub in a meet
+          fs.writeFile('newMeets.csv', csvData , "utf-8",(err)=>{
+              if(err) console.log(err);
+              else{
+                  console.log('data saved')
+                  resolve(csvData)
+              }
+          })
+      })
+      .on('error',(err)=>{
+          console.log(err)
+          reject(err);
+
+      })
+  })
+  .on('error',(err)=>{
+      console.log(err)
+      reject(err);
+
+  })
+  })
+}  
+
+
+
+
 
 module.exports={
     createCSVfromArray,
@@ -148,4 +215,5 @@ module.exports={
     clearCsvFolder,
     clearCsvFile,
     sanitizeData,
+    compareCsvs
 }
