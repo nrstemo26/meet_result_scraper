@@ -85,11 +85,11 @@ async function clearCsvFolder(directory){
       }
 }
 
-async function sanitizeData(){
+async function sanitizeData(file){
   console.log('sanitizing')
   return new Promise((resolve, reject) => {
-      fs.createReadStream('current_metadata.csv')
-        .pipe(csv(csvOptions))
+      fs.createReadStream(file)
+        .pipe(csv({ separator: "|" })
         .on('data',(data)=>{
           let meetData;
           if(!data.Level){
@@ -120,7 +120,10 @@ async function sanitizeData(){
           // console.log(results.size)
           //write new file here
 
-          fs.writeFile('foo.csv', mapToString(results), "utf-8",(err)=>{
+          //******************************** */
+          //********************************* */
+          //foo.csv needs to change
+          fs.writeFile('./scraped_data/foo.csv', mapToString(results), "utf-8",(err)=>{
               if(err) console.log(err);
               else {
                   console.log('data saved')
@@ -140,7 +143,7 @@ async function sanitizeData(){
 }
 
 
-function compareCsvs(latest,old){
+async function compareCsvs(latest,old){
 
   let newMeets = [];
   let oldMeets = [];
@@ -148,7 +151,7 @@ function compareCsvs(latest,old){
   //store in variable 
   return new Promise((resolve, reject) => {
   fs.createReadStream(old)
-  .pipe(csv(csvOptions))
+  .pipe(csv({ separator: "|" }))
   .on('data',(data)=>{
       oldMeets.push(data)
   })
