@@ -9,7 +9,8 @@ async function getAthletesOnPage(athletesOnPage, page , filePath){
             let selector = ".data-table div div.v-data-table div.v-data-table__wrapper table tbody tr:nth-of-type("+ index +") td > div"
             let elArr = Array.from(document.querySelectorAll(`${selector}`))
             elArr = elArr.map((x)=>{
-                return  x.textContent.trim()
+                let el = x.textContent.replace('|', ',')
+                return  el.trim()
             })
             return elArr
         },i)
@@ -81,7 +82,8 @@ async function getMeetsOnPage(athletesOnPage, page , filePath){
             let selector = ".data-table div div.v-data-table div.v-data-table__wrapper table tbody tr:nth-of-type("+ index +") td > div"
             let elArr = Array.from(document.querySelectorAll(`${selector}`))
             elArr = elArr.map((x)=>{
-                return  x.textContent.trim()
+                let el = x.textContent.replace('|', ',')
+                return  el.trim()
             })
             return elArr
         },i)
