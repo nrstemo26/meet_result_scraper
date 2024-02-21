@@ -87,6 +87,11 @@ async function clearCsvFolder(directory){
 }
 
 async function sanitizeData(file){
+  const results = new Map();
+  let duplicates = 0;
+  let newMeets = 0;
+  let duplicateArr = []
+
   console.log('sanitizing')
   return new Promise((resolve, reject) => {
       fs.createReadStream(file)
@@ -116,16 +121,20 @@ async function sanitizeData(file){
           }
         })
         .on('end',()=>{
-          // console.log(`new meets: ${newMeets}`);
+          console.log(`new meets: ${newMeets}`);
           // console.log(`duplicate meets: ${duplicates}`);
-          // console.log(results.size)
-          //write new file here
+          console.log(results.size)
+          
+          // let resultsArr = Array.from(results)
+        
+          const urls = Array.from(results).map((el)=>el[0])
 
-          fs.writeFile('foo.csv', mapToString(results), "utf-8",(err)=>{
+
+          fs.writeFile(file, mapToString(results), "utf-8",(err)=>{
               if(err) console.log(err);
               else {
                   console.log('data saved')
-                  resolve(results)
+                  resolve(urls)
               }
           })
       
@@ -140,9 +149,70 @@ async function sanitizeData(file){
   })
 }
 
+async function checkData(file, index){
+  const results = new Map();
+  let duplicates = 0;
+  let allMeets = 0;
+  let newMeets = 0;
+  let duplicateArr = []
 
-async function compareCsvs(latest,old){
+  console.log('checking file')
+  return new Promise((resolve, reject) => {
+      fs.createReadStream(file)
+        .pipe(csv({separator: "|"}))
+        .on('data',(data)=>{
+          allMeets++;
+          let meetData;
+          if(!data.Level){
+              let [meet,level,date,resultsNo,url] = data.Meet.split('|')
+              meet = meet.replaceAll('"','')
 
+              meetData = {
+                  Meet:meet,
+                  Level:level,
+                  Date: date,
+                  Results: resultsNo,
+                  "Meet Url": url
+              }
+          }else{
+              meetData = data
+          }
+          if(!results.has(meetData["Meet Url"])){
+              newMeets++;
+              results.set(meetData["Meet Url"], meetData)
+          }else{  
+              //console.log(meetData)
+              duplicateArr.push(meetData['Meet Url'])
+              duplicates++;
+          }
+        })
+        .on('end',()=>{
+          // console.log(`new meets: ${newMeets}`);
+          // console.log(`duplicate meets: ${duplicateArr}`);
+          // console.log(`duplicate meets: ${duplicates}`);
+          // console.log('non duplicate results: ' + results.size)
+          // console.log('all meets: ' + allMeets)
+
+          //write new file here
+          fs.writeFile(`./scraped_data/sanitized_${index}.csv`, mapToString(results), "utf-8",(err)=>{
+            if(err) console.log(err);
+            else {
+                console.log('data saved')
+                resolve(results)
+            }
+          })
+        })
+        .on('error',(err)=>{
+          console.log(err)
+          reject(err);
+        })
+      
+  })
+}
+
+
+async function compareCsvs(latest,old,output){
+  console.log('comparing')
   let newMeets = [];
   let oldMeets = [];
   //read all of old metadata csv
@@ -155,7 +225,7 @@ async function compareCsvs(latest,old){
   })
   .on('end',()=>{
       fs.createReadStream(latest)
-      .pipe(csv(csvOptions))
+      .pipe(csv({ separator: "|" }))
       .on('data',(data)=>{
           newMeets.push(data);
       })
@@ -173,8 +243,10 @@ async function compareCsvs(latest,old){
           console.log('done comapring')
           //get new meets from the 2 meets
           const unmatched = newMeets.filter(isNotInFirstArray);
-          // console.log(unmatched)
-          // console.log(unmatched.length)
+          const urls = unmatched.map((el)=>{
+            return el['Meet Url']
+          })
+          console.log(urls.length)
 
           //transform to string to write ascsv
           const csvData = 'Meet|Level|Date|Results|Meet Url\n' + unmatched.map(element =>
@@ -182,19 +254,17 @@ async function compareCsvs(latest,old){
             ).join('\n');
 
           //write as csv
-          //could sub in a meet
-          fs.writeFile('newMeets.csv', csvData , "utf-8",(err)=>{
+          fs.writeFile(output, csvData , "utf-8",(err)=>{
               if(err) console.log(err);
               else{
                   console.log('data saved')
-                  resolve(csvData)
+                  resolve(urls)
               }
           })
       })
       .on('error',(err)=>{
           console.log(err)
           reject(err);
-
       })
   })
   .on('error',(err)=>{
@@ -216,5 +286,6 @@ module.exports={
     clearCsvFolder,
     clearCsvFile,
     sanitizeData,
-    compareCsvs
+    compareCsvs,
+    checkData,
 }
