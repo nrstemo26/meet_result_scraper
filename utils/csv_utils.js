@@ -275,7 +275,26 @@ async function compareCsvs(latest,old,output){
   })
 }  
 
+async function readCsv(filePath) {
+  // const readFileAsync = promisify(fs.readFile);
 
+  try {
+      // Read the CSV file as a stream
+      const stream = fs.createReadStream(filePath)
+          .pipe(csv());
+
+      const data = [];
+
+      // Wait for 'data' event to collect each row
+      for await (const row of stream) {
+          data.push(row);
+      }
+
+      return data;
+  } catch (error) {
+      throw new Error(error);
+  }
+}
 
 
 
@@ -288,4 +307,5 @@ module.exports={
     sanitizeData,
     compareCsvs,
     checkData,
+    readCsv,
 }
