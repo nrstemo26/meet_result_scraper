@@ -13,15 +13,15 @@ async function run (maxRetries, folderName){
     // what do i need to do now
     // ??
     //i think this shit just works?
-    //next step is email to murph?
+    //next step is email to murph? or write to database
     //make it remove or not scrape shit from january? or insert a month
     
 
-    let metadataPath = `./data/${folderName}/metadata.csv`;
-    let successPath = `./data/${folderName}/success.csv`
-    let errorPath = `./data/${folderName}/error.csv`
+    let metadataPath = `${folderName}/metadata.csv`;
+    let successPath = `${folderName}/success.csv`
+    let errorPath = `${folderName}/error.csv`
 
-    await createFolder(`./data/${folderName}`)
+    await createFolder(`${folderName}`)
     await appendToCsv(successPath, ['Meet','Level','Date','Results','Meet Url'])
     await appendToCsv(errorPath, ['Meet','Level','Date','Results','Meet Url'])
 
@@ -47,7 +47,7 @@ async function run (maxRetries, folderName){
             for(meet of meetsArray){
                 let successUrls = successMeets.map(el=> el['Meet Url'])
                 let url = meet['Meet Url']
-                let path = `./data/${folderName}/meet_${url}.csv`
+                let path = `${folderName}/meet_${url}.csv`
                 
                 if(!successUrls.includes(url)){
                     let specificMeetRetries = 0;
@@ -81,6 +81,11 @@ async function run (maxRetries, folderName){
         console.error(`Exceeded max retries (${maxRetries}). Scraping failed.`)
     }
     console.log('done')
+
+    //email new data// that turns into database writes
+    //if that's successfull delete the folder and contents
+    //set up everything to cron
+    
 }
 
 
@@ -90,4 +95,4 @@ module.exports = {
 }
 
 //param is amount of retries
-run(5, 'backfill')
+run(5, './data/backfill')
