@@ -275,14 +275,14 @@ async function compareCsvs(latest,old,output){
   })
 }  
 
-async function readCsv(filePath) {
+async function readCsv(filePath, separator) {
   // const readFileAsync = promisify(fs.readFile);
 
   try {
       // Read the CSV file as a stream
       const stream = fs.createReadStream(filePath)
           .pipe(csv({
-            separator: '|',
+            separator: separator,
           }));
 
       const data = [];
@@ -298,6 +298,35 @@ async function readCsv(filePath) {
   }
 }
 
+async function appendToCsv(filePath, rowData) {
+  try {
+    // Check if the file exists, if not, create it
+    let fileExists = true;
+    try {
+      await fsPromise.access(filePath);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        fileExists = false;
+      } else {
+        throw error;
+      }
+    }
+
+    // If the file doesn't exist, create it with headers
+    if (!fileExists) {
+      await fsPromise.writeFile(filePath, rowData.join(',') + '\n');
+    } else {
+      // Otherwise, append data to the existing file
+      await fsPromise.appendFile(filePath, rowData.join(',') + '\n');
+    }
+
+    console.log('Data appended to CSV successfully.');
+  } catch (error) {
+    throw new Error('Error appending to CSV: ' + error.message);
+  }
+}
+
+
 
 
 module.exports={
@@ -310,4 +339,5 @@ module.exports={
     compareCsvs,
     checkData,
     readCsv,
+    appendToCsv,
 }
