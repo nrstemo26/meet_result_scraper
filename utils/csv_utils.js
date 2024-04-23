@@ -281,7 +281,9 @@ async function readCsv(filePath) {
   try {
       // Read the CSV file as a stream
       const stream = fs.createReadStream(filePath)
-          .pipe(csv());
+          .pipe(csv({
+            separator: '|',
+          }));
 
       const data = [];
 
