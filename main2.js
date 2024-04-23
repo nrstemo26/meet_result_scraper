@@ -4,7 +4,7 @@ const path = require('path');
 const { makeNewMeetMetaData} = require('./scrapers/meetMetadataCsv')
 const {scrapeOneMeet: getOneMeetCsv} = require('./scrapers/scrapeOneMeet')
 const { getWeeksAndYears } = require('./utils/date_utils')
-const {readCsv, extractMeetUrls, clearCsvFolder,clearCsvFile, sanitizeData, compareCsvs, checkData} = require('./utils/csv_utils')
+const {readCsv,appendToCsv, extractMeetUrls, clearCsvFolder,clearCsvFile, sanitizeData, compareCsvs, checkData} = require('./utils/csv_utils')
 const {getAllMeetMetaData, getCurrentYearMetadata} = require('./scrapers/getAllMeetMetaData');
 
 const { fileExists, deleteFile} = require('./utils/fs_utils')
@@ -26,40 +26,57 @@ async function run (maxRetries, folderPath){
     while(totalRetries < maxRetries){
         try{
             if(await fileExists(metadataPath)){
-                
                 //issues with the delimiter for reading csv
                 console.log('file exists')
                 //so the metadata file exists already
                 meetsArray = await readCsv(metadataPath)
-                console.log(meetsArray.length);
-                console.log(meetsArray)
             }else{
                 try{
                     console.log('file does not exist')
                     //no metadata file or there was an error getting it
                     await getCurrentYearMetadata(metadataPath);
-                    let foo = await readCsv(metadataPath)
-                    console.log(foo);
-
+                    meetsArray = await readCsv(metadataPath)
                 }catch(e){
                     await deleteFile(metadataPath);
                     throw new Error('')
                 }
             }
 
-            // if(newMeetUrls.length === 0){
-            //     await getAllMeetMetaData(`${folderPath}/metadata.csv`, 'October 2023');
-            //     // await getCurrentYearMetadata(`./3_10_backfill/metadata.csv`);
-            //     newMeetUrls = await sanitizeData(`${folderPath}/metadata.csv`);
-            //     console.log(newMeetUrls)
-            // }
+            
+            // so we have a meet url and we need to 
+            for(meet of meetsArray){
+                
+                let url = meet['Meet Url']
+                console.log(meet)
+                let path = `${folderPath}/meet_${url}.csv`
+                
+                let specificMeetRetries = 0;
+    
+                while(specificMeetRetries < 5){
+                    try{
+                        console.log('trying to scrape')
+                        await getOneMeetCsv(url, path)
+                        console.log('scraped that hoe')
+                        await appendToCsv(`${folderPath}/success.csv`,Object.values(meet))
+                
+                        break;
+                    }catch(e){
+                        console.log(specificMeetRetries)
+                        await deleteFile(path)
+                        if(specificMeetRetries > 4){
+                        
+                            await appendToCsv(`${folderPath}/error.csv`, Object.values(meet))
+                            break;
+                        }else{
+                            specificMeetRetries++;
+                        }
+                    }
+                }
+            }
+
 
             
 
-           
-            // // let newMeetUrls = await compareCsvs(newFile, oldFile,'./scraped_data/newMeets.csv');
-            // // console.log(newMeetUrls)
-            // // let meets = [1,2,3,4,56,7,7]
             // while(i < newMeetUrls.length){
             //     try{
             //         meetUrl = newMeetUrls[i]
