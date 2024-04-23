@@ -3,22 +3,28 @@ const fs = require('fs');
 const path = require('path');
 const { makeNewMeetMetaData} = require('./scrapers/meetMetadataCsv')
 const {scrapeOneMeet: getOneMeetCsv} = require('./scrapers/scrapeOneMeet')
-const { getWeeksAndYears } = require('./utils/date_utils')
 const {readCsv,appendToCsv, extractMeetUrls, clearCsvFolder,clearCsvFile, sanitizeData, compareCsvs, checkData} = require('./utils/csv_utils')
 const {getAllMeetMetaData, getCurrentYearMetadata} = require('./scrapers/getAllMeetMetaData');
-
-const { fileExists, deleteFile} = require('./utils/fs_utils')
-
+const { fileExists, deleteFile, createFolder} = require('./utils/fs_utils')
 
 
-async function run (maxRetries, folderPath){
+
+async function run (maxRetries, folderName){
     let totalRetries = 0;
-    let errorMeets = [];
     let successMeets = [];
 
-    let metadataPath = `${folderPath}/metadata.csv`;
-    let successPath = `${folderPath}/success.csv`
-    let errorPath = `${folderPath}/error.csv`
+    // what do i need to do now
+    // ??
+    
+
+    let metadataPath = `./${folderName}/metadata.csv`;
+    let successPath = `./${folderName}/success.csv`
+    let errorPath = `./${folderName}/error.csv`
+
+    await createFolder(folderName)
+    await appendToCsv(successPath, ['Meet','Level','Date','Results','Meet Url'])
+    await appendToCsv(errorPath, ['Meet','Level','Date','Results','Meet Url'])
+
 
     while(totalRetries < maxRetries){
         try{
@@ -34,24 +40,15 @@ async function run (maxRetries, folderPath){
                 }
             }
 
-            //creates or reads the success file so we can skip meets 
-            //we already scraped if there was an error scraping
+            //reads the success file so we can skip meets already scraped if there was an error scraping
             if(await fileExists(successPath)){
                 successMeets = await readCsv(successPath, ',')
-            }else{
-                await appendToCsv(successPath,Object.keys(meetsArray[0]))
             }
-
-            //creates the error.csv if it doesn't exist already
-            if(!await fileExists(errorPath)){
-                await appendToCsv(errorPath, Object.keys(meetsArray[0]))
-            }
-
         
             for(meet of meetsArray){
                 let successUrls = successMeets.map(el=> el['Meet Url'])
                 let url = meet['Meet Url']
-                let path = `${folderPath}/meet_${url}.csv`
+                let path = `./${folderName}/meet_${url}.csv`
                 
                 if(!successUrls.includes(url)){
                     let specificMeetRetries = 0;
@@ -94,4 +91,4 @@ module.exports = {
 }
 
 //param is amount of retries
-run(5, './backfill')
+run(5, 'backfill')
