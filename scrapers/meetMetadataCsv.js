@@ -2,7 +2,6 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const path = require('path');
 
-
 async function writeCSVHeaders(inputCsv, outputFileName){
     const headers = [];
     fs.createReadStream(inputCsv)
@@ -75,11 +74,13 @@ async function saveCSV(file, data, headers) {
 //do i need the
 
 async function findUnmatchedRows(csvFiles) {
+    
     const allRows = {};
 
     // Read and store rows from all CSV files
     for (const file of csvFiles) {
         const fileRows = await readCSV(file);
+        // console.log(fileRows)
         allRows[file] = fileRows;
     }
     
@@ -97,7 +98,8 @@ async function findUnmatchedRows(csvFiles) {
             });
         });
     }
-    
+    // console.log(headers)
+    // console.log(unmatchedRows)
     return { headers, unmatchedRows };
 }
 
@@ -106,7 +108,12 @@ async function findUnmatchedRows(csvFiles) {
 //refactor that as needed
 //Write unmatched rows to separate CSV files
 async function writeUnmatchedRows(outputFile, unmatchedOutputDir, csvFiles) {
+    // console.log(outputFile)
+    // console.log(unmatchedOutputDir)
+    // console.log(csvFiles)
     const { headers, unmatchedRows } = await findUnmatchedRows(csvFiles);
+    console.log(headers)
+    // console.log(unmatchedRows)
     for (const [file, rows] of Object.entries(unmatchedRows)) {
         if (rows.length > 0) {
             const outputPath = path.join(unmatchedOutputDir, outputFile);
@@ -120,6 +127,7 @@ async function writeUnmatchedRows(outputFile, unmatchedOutputDir, csvFiles) {
 
 
 async function makeNewMeetMetaData(csvFiles, outputFileName, outputFile, unmatchedOutputDir){
+    console.log('in here')
     await writeCSVHeaders(csvFiles[1], outputFileName)
     .then((res) => {
         console.log('Headers written to CSV files successfully.')
