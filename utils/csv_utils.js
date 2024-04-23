@@ -320,7 +320,6 @@ async function appendToCsv(filePath, rowData) {
       await fsPromise.appendFile(filePath, rowData.join(',') + '\n');
     }
 
-    console.log('Data appended to CSV successfully.');
   } catch (error) {
     throw new Error('Error appending to CSV: ' + error.message);
   }
