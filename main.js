@@ -1,12 +1,9 @@
-//just uncomment run and call this file from command line
 const fs = require('fs');
-const path = require('path');
 const { makeNewMeetMetaData} = require('./scrapers/meetMetadataCsv')
 const {scrapeOneMeet: getOneMeetCsv} = require('./scrapers/scrapeOneMeet')
-const {readCsv,appendToCsv, extractMeetUrls, clearCsvFolder,clearCsvFile, sanitizeData, compareCsvs, checkData} = require('./utils/csv_utils')
+const {readCsv,appendToCsv} = require('./utils/csv_utils')
 const {getAllMeetMetaData, getCurrentYearMetadata} = require('./scrapers/getAllMeetMetaData');
 const { fileExists, deleteFile, createFolder} = require('./utils/fs_utils')
-
 
 
 async function run (maxRetries, folderName){
@@ -16,6 +13,8 @@ async function run (maxRetries, folderName){
     // what do i need to do now
     // ??
     //i think this shit just works?
+    //next step is email to murph?
+    //make it remove or not scrape shit from january? or insert a month
     
 
     let metadataPath = `./data/${folderName}/metadata.csv`;
@@ -25,7 +24,6 @@ async function run (maxRetries, folderName){
     await createFolder(`./data/${folderName}`)
     await appendToCsv(successPath, ['Meet','Level','Date','Results','Meet Url'])
     await appendToCsv(errorPath, ['Meet','Level','Date','Results','Meet Url'])
-
 
     while(totalRetries < maxRetries){
         try{
