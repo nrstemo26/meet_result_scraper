@@ -1,8 +1,9 @@
 {
   "name": "usaw_meet_scraper",
   "version": "1.0.0",
+  "type": "commonjs",
   "description": "node scraper using puppeteer",
-  "main": "app.js",
+  "main": "main.js",
   "scripts": {
     "get-new-meets": "nodemon main.js",
     "scrape-dopers": "nodemon ./doping_scraper/app.js",

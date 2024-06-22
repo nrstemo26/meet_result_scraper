@@ -10,18 +10,15 @@ async function run (maxRetries, folderName){
     let totalRetries = 0;
     let successMeets = [];
 
-    // what do i need to do now
-    // ??
-    //i think this shit just works?
-    //next step is email to murph? or write to database
-    //make it remove or not scrape shit from january? or insert a month
     
+    await fs.promises.mkdir(folderName,{recursive:true})
 
     let metadataPath = `${folderName}/metadata.csv`;
     let successPath = `${folderName}/success.csv`
     let errorPath = `${folderName}/error.csv`
 
     await createFolder(`${folderName}`)
+    await createFolder(`${folderName}data`)
     await appendToCsv(successPath, ['Meet','Level','Date','Results','Meet Url'])
     await appendToCsv(errorPath, ['Meet','Level','Date','Results','Meet Url'])
 
@@ -47,7 +44,7 @@ async function run (maxRetries, folderName){
             for(meet of meetsArray){
                 let successUrls = successMeets.map(el=> el['Meet Url'])
                 let url = meet['Meet Url']
-                let path = `${folderName}/meet_${url}.csv`
+                let path = `${folderName}/data/meet_${url}.csv`
                 
                 if(!successUrls.includes(url)){
                     let specificMeetRetries = 0;
@@ -94,5 +91,13 @@ module.exports = {
     run: run
 }
 
-//param is amount of retries
-run(5, './data/backfill')
+
+// run(5, './data/backfill')
+
+
+// so i need to get this to work weekly
+// what do i need to do weekly?
+// have an update of the upcoming national meets
+// have an update of the meet results(current iteration works)
+
+
