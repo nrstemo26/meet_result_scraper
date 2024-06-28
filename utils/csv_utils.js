@@ -59,6 +59,28 @@ async function writeCSV(filePath, data){
     })
 }
 
+async function addtoCSV(filePath,data, delimiter){
+    console.log(data);
+    console.log('some issues')
+    // Ensure the directory exists before writing
+    fs.mkdirSync(require('path').dirname(filePath), { recursive: true });
+    console.log('some issues1')
+    
+    // Create a writable stream and ensure appending by checking if the file exists
+    const ws = fs.createWriteStream(filePath, { flags: 'a' });
+    console.log('some issues2')
+    
+    // Check if the file is empty to decide whether to write headers
+    const fileExists = fs.existsSync(filePath) && fs.statSync(filePath).size > 0;
+    console.log('some issues3')
+    
+    // Write to CSV with fast-csv
+    fastcsv
+    .write(data, { headers: !fileExists, includeEndRowDelimiter: true, delimiter: delimiter, writeBOM: true })
+    .pipe(ws);
+    console.log('some issues4')
+  }
+  
 
 //function to delete the one file
 async function clearCsvFile(directory){
@@ -325,6 +347,42 @@ async function appendToCsv(filePath, rowData) {
   }
 }
 
+async function betterWriteCSV(filePath, data, headers,separator){
+  //make the file if it doesn't exist
+  console.log('write better csv')
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, '');
+  }
+
+  try{
+    const csvStream = fastcsv.format({headers:headers, delimiter:separator});
+    const writableStream = fs.createWriteStream(filePath);
+    
+    writableStream.on('finish',()=>{
+      console.log('done writing')
+    }).on('error',(err)=>{
+      console.log(err);
+    });
+
+    
+    csvStream.pipe(writableStream);
+    data.forEach((row)=> csvStream.write(row));
+    csvStream.end();
+  }catch(e){
+    console.log(e);
+  }
+}
+
+async function filterAlreadyScrapedMeets(allMetadataPath, alreadyScrapedPath){
+  let allMeets = await readCsv(allMetadataPath, '|');
+  let alreadyScraped = await readCsv(alreadyScrapedPath, '|');  
+  
+  const filteredMetadata = allMeets.filter(meta => {
+    return !alreadyScraped.some(scraped => scraped['Meet Url'] === meta['Meet Url']); // Assuming 'id' is the unique identifier
+  });
+
+  return filteredMetadata;
+}
 
 
 
@@ -339,4 +397,7 @@ module.exports={
     checkData,
     readCsv,
     appendToCsv,
+    betterWriteCSV,
+    filterAlreadyScrapedMeets,
+    addtoCSV,
 }
