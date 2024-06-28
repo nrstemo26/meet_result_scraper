@@ -60,25 +60,14 @@ async function writeCSV(filePath, data){
 }
 
 async function addtoCSV(filePath,data, delimiter){
-    console.log(data);
-    console.log('some issues')
-    // Ensure the directory exists before writing
     fs.mkdirSync(require('path').dirname(filePath), { recursive: true });
-    console.log('some issues1')
-    
-    // Create a writable stream and ensure appending by checking if the file exists
     const ws = fs.createWriteStream(filePath, { flags: 'a' });
-    console.log('some issues2')
-    
-    // Check if the file is empty to decide whether to write headers
     const fileExists = fs.existsSync(filePath) && fs.statSync(filePath).size > 0;
-    console.log('some issues3')
     
     // Write to CSV with fast-csv
     fastcsv
     .write(data, { headers: !fileExists, includeEndRowDelimiter: true, delimiter: delimiter, writeBOM: true })
     .pipe(ws);
-    console.log('some issues4')
   }
   
 
