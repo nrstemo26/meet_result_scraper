@@ -48,8 +48,29 @@ async function fileExists(path){
     }
 }
 
+// async function checkFile(filePath){
+//     function fileExists(filePath) {
+//         return new Promise((resolve) => {
+//             fs.access(filePath, fs.constants.F_OK, (err) => {
+//                 resolve(!err);
+//             });
+//         });
+//     }
+//     const exists = await fileExists(filePath);
+//     console.log(exists ? 'File exists.' : 'File does not exist.');
+//     return exists;
+
+// }
+
+async function checkFile(file){
+    return fs.promises.access(file, fs.constants.F_OK)
+    .then(() => true)
+    .catch(() => false)
+}
+
 module.exports = {
     fileExists:fileExists,
     deleteFile:deleteFile,
     createFolder:createFolder,
+    checkFile:checkFile,
 }
